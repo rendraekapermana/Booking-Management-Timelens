@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-primary: #090100;
+  --color-primary-container: #2c1810;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #9e7e73;
+  --color-secondary: #855230;
+  --color-secondary-container: #febb90;
+  --color-on-secondary-container: #794827;
+  --color-surface: #fcf9f4;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f6f3ee;
+  --color-surface-container: #f0ede9;
+  --color-surface-container-high: #ebe8e3;
+  --color-surface-container-highest: #e5e2dd;
+  --color-on-surface: #1c1c19;
+  --color-on-surface-variant: #504440;
+  --color-outline: #827470;
+  --color-outline-variant: #d3c3be;
+  --color-tertiary-fixed: #c7ecce;
+  --color-on-tertiary-fixed: #01210f;
+  --color-on-tertiary-container: #2d633b;
+  --color-secondary-fixed: #ffdbc7;
+  --color-secondary-fixed-dim: #fbb88e;
+  --color-on-secondary-fixed: #311300;
+  --color-on-secondary-fixed-variant: #693b1b;
+  --color-surface-bright: #fcf9f4;
+  --color-surface-dim: #dcdad5;
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #fcf9f4;
+  color: #1c1c19;
+  margin: 0;
+  padding: 0;
+}
+
+/* Material symbols outlined styling */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Print optimizations for invoice and receipts */
+@media print {
+  aside, header, nav, .no-print {
+    display: none !important;
+  }
+  body, main {
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .print-sheet {
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Timelens Photobooth Booking Management System",
+  "description": "Timelens Photobooth Atelier booking and operations management suite with calendar, incoming orders, expenses, reports, invoice generator, and customer reservation portal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
