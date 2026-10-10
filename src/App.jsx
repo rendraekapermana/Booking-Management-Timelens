@@ -25,7 +25,10 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [currentView, setCurrentView] = useState("dashboard");
   const [bookings, setBookings] = useState([]);
-  const [incomingOrders, setIncomingOrders] = useState(initialIncomingOrders);
+  const [incomingOrders, setIncomingOrders] = useState([]);
+  useEffect(() => {
+    setIncomingOrders(bookings);
+  }, [bookings]);
   const [expenses, setExpenses] = useState(initialExpenses);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [expenseToEdit, setExpenseToEdit] = useState(null);
@@ -74,8 +77,20 @@ export default function App() {
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
-  const navigate = (viewId) => {
+  const navigate = (viewId, param = null) => {
     setCurrentView(viewId);
+
+    if (param) {
+      if (typeof param === "object") {
+        setSelectedBooking(param);
+      } else {
+        const found =
+          bookings.find((b) => b.id === param) ||
+          incomingOrders.find((o) => o.id === param);
+        if (found) setSelectedBooking(found);
+      }
+    }
+
     window.location.hash = viewId;
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -243,7 +258,7 @@ export default function App() {
           {currentView === "dashboard" && (
             <DashboardPage
               bookings={bookings}
-              incomingOrders={incomingOrders}
+              incomingOrders={bookings}
               onNavigate={navigate}
               onSelectBooking={(b) => setSelectedBooking(b)}
               onSelectOrder={() => navigate("incoming-orders")}
@@ -261,7 +276,7 @@ export default function App() {
 
           {currentView === "incoming-orders" && (
             <IncomingOrdersPage
-              incomingOrders={incomingOrders}
+              incomingOrders={bookings} // 🔥 SINKRONISASI KE DATABASE
               onUpdateOrderStatus={handleUpdateOrderStatus}
               onNavigate={navigate}
               onSelectBookingFromOrder={handleSelectBookingFromOrder}
