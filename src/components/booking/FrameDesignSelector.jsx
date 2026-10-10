@@ -36,12 +36,6 @@ export default function FrameDesignSelector({
               </div>
               <p className="text-[11px] text-[#504440]">{frame.description}</p>
             </div>
-            <div className="mt-4 pt-3 border-t border-[#d3c3be]/30 flex items-center justify-between">
-              <span className="text-[10px] uppercase font-semibold text-[#827470]">Biaya Desain</span>
-              <span className={`text-xs font-semibold ${frame.surcharge > 0 ? 'text-[#855230]' : 'text-[#504440]'}`}>
-                {frame.surcharge > 0 ? `+${formatIDR(frame.surcharge)}` : 'Termasuk'}
-              </span>
-            </div>
           </div>
         );
       })}

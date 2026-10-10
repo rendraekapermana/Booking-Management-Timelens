@@ -1,11 +1,21 @@
-import React from 'react';
-import MetricCard from '../components/ui/MetricCard.jsx';
-import Badge from '../components/ui/Badge.jsx';
+import React from "react";
+import MetricCard from "../components/ui/MetricCard.jsx";
+import Badge from "../components/ui/Badge.jsx";
+import { useState, useEffect } from "react";
+import { fetchBookings } from "../services/bookingService.js";
 
-export default function DashboardPage({ bookings, incomingOrders, onNavigate, onSelectBooking, onSelectOrder }) {
+export default function DashboardPage({
+  bookings,
+  incomingOrders,
+  onNavigate,
+  onSelectBooking,
+  onSelectOrder,
+}) {
   // Filter confirmed upcoming bookings
   const upcomingEvents = bookings.slice(0, 4);
-  const pendingRequests = incomingOrders.filter(o => o.status === 'new').slice(0, 2);
+  const pendingRequests = incomingOrders
+    .filter((o) => o.status === "new")
+    .slice(0, 2);
 
   return (
     <div className="flex flex-col gap-10">
@@ -34,7 +44,7 @@ export default function DashboardPage({ bookings, incomingOrders, onNavigate, on
           subtitle="Next 14 days scheduled"
           icon="calendar_month"
           accentColor="bg-[#855230]/30"
-          onClick={() => onNavigate('calendar')}
+          onClick={() => onNavigate("calendar")}
         />
 
         <MetricCard
@@ -43,7 +53,7 @@ export default function DashboardPage({ bookings, incomingOrders, onNavigate, on
           subtitle="Awaiting owner review"
           icon="pending_actions"
           accentColor="bg-[#febb90]"
-          onClick={() => onNavigate('incoming-orders')}
+          onClick={() => onNavigate("incoming-orders")}
         />
 
         <MetricCard
@@ -52,7 +62,7 @@ export default function DashboardPage({ bookings, incomingOrders, onNavigate, on
           subtitle="October 2024"
           icon="auto_stories"
           accentColor="bg-[#e5e2dd]"
-          onClick={() => onNavigate('reports')}
+          onClick={() => onNavigate("reports")}
         />
       </div>
 
@@ -71,11 +81,13 @@ export default function DashboardPage({ bookings, incomingOrders, onNavigate, on
             </div>
             <button
               type="button"
-              onClick={() => onNavigate('calendar')}
+              onClick={() => onNavigate("calendar")}
               className="text-sm text-[#855230] hover:text-[#090100] transition-colors flex items-center gap-1 font-semibold cursor-pointer"
             >
               <span>Full Schedule</span>
-              <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+              <span className="material-symbols-outlined text-[16px]">
+                arrow_forward
+              </span>
             </button>
           </div>
 
@@ -107,17 +119,17 @@ export default function DashboardPage({ bookings, incomingOrders, onNavigate, on
                       key={evt.id}
                       onClick={() => {
                         onSelectBooking(evt);
-                        onNavigate('booking-detail');
+                        onNavigate("booking-detail");
                       }}
                       className="hover:bg-[#f6f3ee]/40 transition-colors cursor-pointer group"
                     >
                       <td className="py-5 px-6 whitespace-nowrap">
                         <div className="flex flex-col">
                           <span className="text-sm text-[#090100] font-semibold group-hover:text-[#855230] transition-colors">
-                            {evt.dateFormatted.split(',')[1]}
+                            {evt.dateFormatted.split(",")[1]}
                           </span>
                           <span className="text-xs text-[#504440]">
-                            {evt.time.split('–')[0]}
+                            {evt.time.split("–")[0]}
                           </span>
                         </div>
                       </td>
@@ -141,7 +153,10 @@ export default function DashboardPage({ bookings, incomingOrders, onNavigate, on
                           <span className="material-symbols-outlined text-[16px] opacity-70 text-[#855230]">
                             location_on
                           </span>
-                          <span className="text-xs text-[#1c1c19] truncate max-w-[170px]" title={evt.venueName}>
+                          <span
+                            className="text-xs text-[#1c1c19] truncate max-w-[170px]"
+                            title={evt.venueName}
+                          >
                             {evt.venueName}
                           </span>
                         </div>
@@ -212,12 +227,14 @@ export default function DashboardPage({ bookings, incomingOrders, onNavigate, on
                     type="button"
                     onClick={() => {
                       onSelectOrder(req);
-                      onNavigate('incoming-orders');
+                      onNavigate("incoming-orders");
                     }}
                     className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#2c1810] text-[#ffffff] hover:bg-[#090100] text-xs font-semibold transition-colors duration-150 cursor-pointer shadow-xs"
                   >
                     <span>Review</span>
-                    <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                    <span className="material-symbols-outlined text-[14px]">
+                      arrow_forward
+                    </span>
                   </button>
                 </div>
               </div>
@@ -226,11 +243,13 @@ export default function DashboardPage({ bookings, incomingOrders, onNavigate, on
             {/* Quick summary button to view all */}
             <button
               type="button"
-              onClick={() => onNavigate('incoming-orders')}
+              onClick={() => onNavigate("incoming-orders")}
               className="w-full py-3 px-4 rounded-xl border border-dashed border-[#d3c3be] text-xs font-semibold text-[#855230] hover:bg-[#f6f3ee] hover:border-[#855230] transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>View All Incoming Pipeline</span>
-              <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+              <span className="material-symbols-outlined text-[16px]">
+                arrow_forward
+              </span>
             </button>
           </div>
         </div>

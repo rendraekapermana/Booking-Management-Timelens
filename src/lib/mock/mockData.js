@@ -481,60 +481,58 @@ export const pricingOptions = {
   },
   frameOptions: [
     { id: "client", label: "Dari Client", description: "Klien mengirim file layout sendiri", surcharge: 0 },
-    { id: "timelens", label: "Dibuatkan oleh Timelens", description: "Kurasi visual atelier (+Rp 300.000)", surcharge: 300000 }
+    { id: "timelens", label: "Dibuatkan oleh Timelens", description: "Design oleh timelens dengan 1X revisi", surcharge: 300000 }
   ],
   paperOptions: [
     {
       id: "photostrip",
       name: "Photostrip (2x6)",
-      tag: "Classic",
-      description: "Format strip vertikal 3 pose ganda. Paling digemari tamu undangan.",
-      surcharge: 0
+      description: "Format strip vertikal 3 atau 4 pose ganda. Paling digemari tamu undangan.",
     },
     {
       id: "4r",
       name: "4R (4x6)",
-      tag: "Populer",
-      description: "Format foto penuh lanskap/potret 4R bingkai editorial elegan.",
-      surcharge: 0
+      description: "Format foto penuh landscape/potrait 4R bingkai editorial elegan.",
     },
     {
       id: "photo_crack",
       name: "Photo Crack",
-      tag: "Artistic",
       description: "Sentuhan tepian bertekstur vintage crack premium cotton paper.",
-      surcharge: 150000
     }
   ],
   backdropOptions: [
     {
       id: "clean_white",
       name: "Clean White",
-      subtitle: "Seamless Drapery",
-      caption: "Minimalist Neutral",
-      surcharge: 0
     },
     {
       id: "glam_silver",
       name: "Glam Silver",
-      subtitle: "Shimmer Spangle",
-      caption: "Party & Celebration",
-      surcharge: 250000
+    },
+    {
+      id: "glam_gold",
+      name: "Glam Gold",
+    },
+    {
+      id: "glam_black",
+      name: "Glam Black",
     },
     {
       id: "satin_red",
       name: "Satin Red",
-      subtitle: "Luxe Velvet",
-      caption: "Atelier Signature",
-      surcharge: 400000
+    },
+    {
+      id: "velvet_green",
+      name: "Velvet Green",
+    },
+    {
+      id: "velvet_blue",
+      name: "Velvet Blue",
     },
     {
       id: "client_backdrop",
       name: "Dari Client",
-      subtitle: "Dekorasi Venue Sendiri",
-      caption: "Provided by Host",
-      surcharge: 0
-    }
+    },
   ]
 };
 

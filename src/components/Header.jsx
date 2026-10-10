@@ -71,15 +71,6 @@ export default function Header({ currentView, onNavigate, onOpenNewBooking }) {
           <span>Public Form</span>
         </button>
 
-        <button
-          type="button"
-          onClick={onOpenNewBooking}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#2c1810] text-[#ffffff] hover:bg-[#090100] text-sm font-semibold rounded-lg shadow-sm transition-colors duration-150 cursor-pointer"
-        >
-          <span className="material-symbols-outlined text-[18px]">add</span>
-          <span>New Booking</span>
-        </button>
-
         <div className="h-6 w-px bg-[#d3c3be]/60"></div>
 
         <button

@@ -37,14 +37,6 @@ export default function BackdropSelector({
               <p className="text-[11px] text-[#504440]">{item.subtitle}</p>
               <p className="text-[10px] text-[#827470] mt-0.5">{item.caption}</p>
             </div>
-            <div className="mt-4 pt-3 border-t border-[#d3c3be]/30 flex items-center justify-between">
-              <span className="text-[10px] uppercase font-semibold text-[#827470]">
-                {item.surcharge > 0 ? 'Tambahan' : 'Included'}
-              </span>
-              <span className={`text-xs font-semibold ${item.surcharge > 0 ? 'text-[#855230]' : 'text-[#504440]'}`}>
-                {item.surcharge > 0 ? `+${formatIDR(item.surcharge)}` : 'Rp 0'}
-              </span>
-            </div>
           </div>
         );
       })}

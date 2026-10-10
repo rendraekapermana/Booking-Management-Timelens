@@ -221,7 +221,7 @@ export default function CreateEditBookingFormPage({ onNavigate, onShowToast }) {
                 >
                   <option value="2 Jam">2 Jam (Rp 2.000.000)</option>
                   <option value="3 Jam">3 Jam (Rp 2.400.000)</option>
-                  <option value="4 Jam">4 Jam (Standar - Rp 2.800.000)</option>
+                  <option value="4 Jam">4 Jam </option>
                   <option value="5 Jam">5 Jam (Rp 3.200.000)</option>
                   <option value="6 Jam">6 Jam (Rp 3.600.000)</option>
                 </select>
