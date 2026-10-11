@@ -5,7 +5,8 @@ import BookingSpecsCard from "../components/booking/BookingSpecsCard.jsx";
 import PaymentLedger from "../components/booking/PaymentLedger.jsx";
 import RecordPaymentModal from "../components/booking/RecordPaymentModal.jsx";
 import Button from "../components/ui/Button.jsx";
-import Badge from "../components/ui/Badge.jsx";
+// 🔥 IMPOR GOOGLE CALENDAR
+import { syncBookingToGoogleCalendar } from "../services/calendarSync.js";
 
 // --- SUB-KOMPONEN: Header Navigasi & Tombol Aksi ---
 const DetailHeader = ({ booking, onNavigate, onOpenEdit, onOpenPayment }) => (
@@ -55,7 +56,7 @@ const DetailHeader = ({ booking, onNavigate, onOpenEdit, onOpenPayment }) => (
 );
 
 // --- SUB-KOMPONEN: Profil Event & Venue ---
-const EventProfileCard = ({ booking }) => (
+const EventProfileCard = ({ booking, onStatusChange }) => (
   <div className="bg-[#ffffff] rounded-xl p-6 shadow-xs border border-[#d3c3be]/30 flex flex-col gap-6">
     <div className="flex items-center justify-between pb-3 border-b border-[#d3c3be]/30">
       <div className="flex items-center gap-2.5">
@@ -66,17 +67,40 @@ const EventProfileCard = ({ booking }) => (
           Event Profile &amp; Location
         </h2>
       </div>
-      <Badge
-        variant={
-          booking.status === "Pending"
-            ? "warning"
-            : booking.status === "Rejected"
-              ? "error"
-              : "success"
-        }
-      >
-        {booking.status}
-      </Badge>
+
+      {/* 🔥 DROPDOWN STATUS PENGGANTI BADGE */}
+      <div className="relative inline-block">
+        <select
+          value={booking.status}
+          onChange={(e) => onStatusChange(e.target.value)}
+          className={`text-xs font-semibold rounded-lg pl-3 pr-8 py-1.5 border outline-none cursor-pointer appearance-none transition-colors shadow-xs ${
+            booking.status === "Pending"
+              ? "bg-[#fff8e6] text-[#b38a22] border-[#ffe4a0]"
+              : booking.status === "Confirmed"
+                ? "bg-[#eefcf2] text-[#22a04c] border-[#bbf2ce]" // Hijau
+                : booking.status === "Fully Paid"
+                  ? "bg-[#eff6ff] text-[#2563eb] border-[#bfdbfe]" // Biru
+                  : "bg-[#fef2f2] text-[#ef4444] border-[#fecaca]" // Merah
+          }`}
+        >
+          {/* Option dipaksa putih agar tidak ikut warna background select */}
+          <option value="Pending" className="bg-white text-[#1c1c19]">
+            Pending
+          </option>
+          <option value="Confirmed" className="bg-white text-[#1c1c19]">
+            Confirmed
+          </option>
+          <option value="Fully Paid" className="bg-white text-[#1c1c19]">
+            Fully Paid
+          </option>
+          <option value="Rejected" className="bg-white text-[#1c1c19]">
+            Rejected
+          </option>
+        </select>
+        <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-[16px] pointer-events-none opacity-60">
+          expand_more
+        </span>
+      </div>
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -247,7 +271,6 @@ export default function BookingDetailPage(props) {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [editData, setEditData] = useState({});
 
-  // 1. Saat inisialisasi, pastikan SEMUA field dibaca agar tidak hilang saat diedit
   useEffect(() => {
     if (passedBooking) {
       setBooking(passedBooking);
@@ -282,24 +305,7 @@ export default function BookingDetailPage(props) {
       try {
         const data = await bookingService.getById(passedId);
         setBooking(data);
-        setEditData({
-          eventName: data.eventName || "",
-          customerName: data.customerName || "",
-          customerPhone: data.customerPhone || "",
-          customerEmail: data.customerEmail || "",
-          date: data.date || "",
-          time: data.time || "",
-          duration: data.duration || "4 hours",
-          venueName: data.venueName || "",
-          venueMapsLink: data.venueMapsLink || "",
-          backdrop: data.backdrop || "Standard",
-          paperType: data.paperType || "Photostrip",
-          frameDesign: data.frameDesign || "-",
-          totalPrice: data.totalPrice || 0,
-          downPayment: data.downPayment || 0,
-          status: data.status || "Pending",
-          uploadedFileName: data.uploadedFileName || null,
-        });
+        // ... (inisialisasi editData sama dengan di atas)
       } catch (error) {
         if (props.onShowToast)
           props.onShowToast("Gagal memuat detail pesanan", "error");
@@ -310,13 +316,12 @@ export default function BookingDetailPage(props) {
     fetchBooking();
   }, [passedId, passedBooking]);
 
-  // 2. Saat menyimpan, gabungkan data lama dengan data edit agar properti lain tidak tertimpa kosong
   const handleSaveEdit = async (e) => {
     e.preventDefault();
     try {
       const payload = {
-        ...booking, // Bawa data lama yang tidak tampil di form edit
-        ...editData, // Timpa dengan data yang baru diubah
+        ...booking,
+        ...editData,
         id: booking.id,
       };
 
@@ -329,6 +334,42 @@ export default function BookingDetailPage(props) {
     } catch (error) {
       if (props.onShowToast)
         props.onShowToast("Gagal memperbarui data", "error");
+    }
+  };
+
+  // 🔥 FUNGSI UPDATE STATUS VIA DROPDOWN (DETAIL PAGE)
+  const handleStatusChange = async (newStatus) => {
+    try {
+      const payload = { ...booking, status: newStatus };
+      const updatedData = await bookingService.update(payload);
+
+      setBooking(updatedData);
+      if (props.onUpdateBooking) props.onUpdateBooking(updatedData);
+
+      if (newStatus === "Confirmed" || newStatus === "Fully Paid") {
+        const savedAccounts = JSON.parse(
+          localStorage.getItem("googleAccounts") || "[]",
+        );
+        if (savedAccounts.length > 0) {
+          savedAccounts.forEach(async (acc) => {
+            await syncBookingToGoogleCalendar(updatedData, acc.accessToken);
+          });
+          if (props.onShowToast)
+            props.onShowToast(
+              `Status: ${newStatus}. Jadwal masuk ke Kalender!`,
+              "success",
+            );
+        } else {
+          if (props.onShowToast)
+            props.onShowToast(`Status diperbarui menjadi ${newStatus}`);
+        }
+      } else {
+        if (props.onShowToast)
+          props.onShowToast(`Status diperbarui menjadi ${newStatus}`);
+      }
+    } catch (error) {
+      if (props.onShowToast)
+        props.onShowToast("Gagal memperbarui status", "error");
     }
   };
 
@@ -379,7 +420,10 @@ export default function BookingDetailPage(props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-7 flex flex-col gap-8">
-          <EventProfileCard booking={booking} />
+          <EventProfileCard
+            booking={booking}
+            onStatusChange={handleStatusChange}
+          />
           <BookingSpecsCard booking={booking} />
         </div>
 

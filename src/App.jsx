@@ -18,6 +18,8 @@ import InvoiceSettingsPage from "./pages/InvoiceSettingsPage.jsx";
 import InvoicePreviewPage from "./pages/InvoicePreviewPage.jsx";
 import PublicBookingPage from "./pages/PublicBookingPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+import IntegrationsPage from "./pages/IntegrationsPage.jsx";
+import { syncBookingToGoogleCalendar } from "./services/calendarSync.js";
 
 import { initialIncomingOrders, initialExpenses } from "./lib/mock/mockData.js";
 
@@ -66,6 +68,7 @@ export default function App() {
           "reports",
           "invoice-settings",
           "invoice-preview",
+          "integrations",
         ].includes(hash)
       ) {
         setCurrentView(hash);
@@ -103,8 +106,12 @@ export default function App() {
   };
 
   const handleAddBooking = async (newBooking) => {
+    // 🔍 1. CEK APAKAH FUNGSI INI BENAR-BENAR TERPANGGIL
+    console.log("🔴 [LACAK 1] Modal disubmit! Data form mentah:", newBooking);
+
     try {
       const savedBookings = await bookingService.create(newBooking);
+      console.log("🔴 [LACAK 2] Berhasil disave ke DB:", savedBookings);
 
       setBookings([savedBookings, ...bookings]);
       setSelectedBooking(savedBookings);
@@ -113,8 +120,54 @@ export default function App() {
       showToast(
         `New booking "${newBooking.eventName}" confirmed and scheduled.`,
       );
+
+      // 🔍 2. CEK STATUSNYA APA
+      const rawStatus =
+        savedBookings.status || newBooking.status || "KOSONG/TIDAK ADA STATUS";
+      const currentStatus = rawStatus.toLowerCase();
+      console.log("🔴 [LACAK 3] Status pesanan terbaca sebagai:", rawStatus);
+
+      if (currentStatus === "confirmed" || currentStatus === "fully paid") {
+        console.log(
+          "🔴 [LACAK 4] Status lolos pengecekan! Menyiapkan kalender...",
+        );
+
+        const savedAccounts = JSON.parse(
+          localStorage.getItem("googleAccounts") || "[]",
+        );
+        console.log(
+          "🔴 [LACAK 5] Akun Google ditemukan di memori:",
+          savedAccounts.length,
+        );
+
+        if (savedAccounts.length > 0) {
+          savedAccounts.forEach(async (acc) => {
+            console.log(
+              `🔴 [LACAK 6] Mencoba kirim ke email: ${acc.email}. Token ada: ${!!acc.accessToken}`,
+            );
+
+            // Panggil API Kalender
+            const success = await syncBookingToGoogleCalendar(
+              savedBookings,
+              acc.accessToken,
+            );
+            console.log(
+              `🔴 [LACAK 7] Hasil akhir kalender untuk ${acc.email}:`,
+              success,
+            );
+          });
+        } else {
+          console.error(
+            "🔴 [ERROR] Pemicu batal: Akun Google tidak ditemukan di local storage!",
+          );
+        }
+      } else {
+        console.warn(
+          `🔴 [GAGAL TRIGGER] Kalender dilewati karena statusnya '${rawStatus}', bukan Confirmed/Fully Paid.`,
+        );
+      }
     } catch (error) {
-      console.error("Gagal menyimpan booking:", error);
+      console.error("🔴 [ERROR FATAL] Gagal menyimpan booking:", error);
       showToast("Gagal menyimpan booking ke database.", "error");
     }
   };
@@ -125,11 +178,49 @@ export default function App() {
   };
 
   const handleUpdateOrderStatus = (orderId, newStatus) => {
-    setIncomingOrders(
-      incomingOrders.map((o) =>
-        o.id === orderId ? { ...o, status: newStatus } : o,
-      ),
-    );
+    const updatedOrders = incomingOrders.map((o) => {
+      if (o.id === orderId) {
+        const updated = { ...o, status: newStatus };
+
+        // 🚀 PEMICU GOOGLE CALENDAR DARI DROPDOWN
+        if (newStatus === "Confirmed" || newStatus === "Fully Paid") {
+          const savedAccounts = JSON.parse(
+            localStorage.getItem("googleAccounts") || "[]",
+          );
+
+          if (savedAccounts.length > 0) {
+            savedAccounts.forEach(async (acc) => {
+              const success = await syncBookingToGoogleCalendar(
+                updated,
+                acc.accessToken,
+              );
+              if (success) {
+                console.log(`✅ Event sukses disinkronkan ke: ${acc.email}`);
+              }
+            });
+            showToast(
+              `Status: ${newStatus}. Jadwal masuk ke Google Calendar!`,
+              "success",
+            );
+          } else {
+            showToast(
+              `Status pesanan diperbarui menjadi ${newStatus}.`,
+              "success",
+            );
+          }
+        } else {
+          showToast(
+            `Status pesanan diperbarui menjadi ${newStatus}.`,
+            "success",
+          );
+        }
+
+        return updated;
+      }
+      return o;
+    });
+
+    setIncomingOrders(updatedOrders);
   };
 
   const handleSelectBookingFromOrder = (order) => {
@@ -325,6 +416,10 @@ export default function App() {
           )}
 
           {currentView === "reports" && <ReportsPage onShowToast={showToast} />}
+
+          {currentView === "integrations" && (
+            <IntegrationsPage onShowToast={showToast} />
+          )}
 
           {currentView === "invoice-settings" && (
             <InvoiceSettingsPage

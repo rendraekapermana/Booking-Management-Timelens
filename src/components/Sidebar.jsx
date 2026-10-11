@@ -1,24 +1,26 @@
-import React from 'react';
-import { studioProfile } from '../data/mockData.js';
+import React from "react";
+import { studioProfile } from "../data/mockData.js";
 
 export default function Sidebar({ currentView, onNavigate, onLogout }) {
   const mainNav = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { id: 'calendar', label: 'Calendar', icon: 'calendar_today' },
+    { id: "dashboard", label: "Dashboard", icon: "dashboard" },
+    { id: "calendar", label: "Calendar", icon: "calendar_today" },
   ];
 
   const bookingNav = [
-    { id: 'incoming-orders', label: 'Incoming Orders', icon: 'inbox' },
-    { id: 'booking-forms', label: 'Booking Forms', icon: 'assignment' },
+    { id: "incoming-orders", label: "Incoming Orders", icon: "inbox" },
+    { id: "booking-forms", label: "Booking Forms", icon: "assignment" },
   ];
 
   const businessNav = [
-    { id: 'expenses', label: 'Expenses', icon: 'receipt_long' },
-    { id: 'reports', label: 'Reports', icon: 'bar_chart' },
+    { id: "expenses", label: "Expenses", icon: "receipt_long" },
+    { id: "reports", label: "Reports", icon: "bar_chart" },
   ];
 
   const settingsNav = [
-    { id: 'invoice-settings', label: 'Invoice Settings', icon: 'tune' },
+    { id: "invoice-settings", label: "Invoice Settings", icon: "tune" },
+    // 🔥 MENU INTEGRATIONS DITAMBAHKAN DI SINI
+    { id: "integrations", label: "Integrations", icon: "extension" },
   ];
 
   const renderNavGroup = (title, items) => (
@@ -27,21 +29,23 @@ export default function Sidebar({ currentView, onNavigate, onLogout }) {
         {title}
       </span>
       {items.map((item) => {
-        const isActive = currentView === item.id || 
-          (item.id === 'incoming-orders' && currentView === 'booking-detail') ||
-          (item.id === 'booking-forms' && currentView === 'edit-booking-form') ||
-          (item.id === 'expenses' && currentView === 'add-expense') ||
-          (item.id === 'invoice-settings' && currentView === 'invoice-preview');
+        const isActive =
+          currentView === item.id ||
+          (item.id === "incoming-orders" && currentView === "booking-detail") ||
+          (item.id === "booking-forms" &&
+            currentView === "edit-booking-form") ||
+          (item.id === "expenses" && currentView === "add-expense") ||
+          (item.id === "invoice-settings" && currentView === "invoice-preview");
 
         return (
           <button
             key={item.id}
             type="button"
             onClick={() => onNavigate(item.id)}
-            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 text-left ${
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 text-left cursor-pointer ${
               isActive
-                ? 'bg-[#2c1810] text-[#fcf9f4] shadow-sm'
-                : 'text-[#504440] hover:bg-[#ebe8e3] hover:text-[#1c1c19]'
+                ? "bg-[#2c1810] text-[#fcf9f4] shadow-sm"
+                : "text-[#504440] hover:bg-[#ebe8e3] hover:text-[#1c1c19]"
             }`}
           >
             <span className="material-symbols-outlined text-[18px] select-none">
@@ -61,7 +65,7 @@ export default function Sidebar({ currentView, onNavigate, onLogout }) {
         <div className="flex items-center gap-3 pb-6 border-b border-[#d3c3be]/40">
           <button
             type="button"
-            onClick={() => onNavigate('dashboard')}
+            onClick={() => onNavigate("dashboard")}
             className="inline-flex items-center cursor-pointer text-left"
           >
             <img
@@ -74,10 +78,10 @@ export default function Sidebar({ currentView, onNavigate, onLogout }) {
 
         {/* Navigation Groups */}
         <nav className="flex-1 flex flex-col gap-6 pt-6">
-          {renderNavGroup('MAIN', mainNav)}
-          {renderNavGroup('BOOKING', bookingNav)}
-          {renderNavGroup('BUSINESS', businessNav)}
-          {renderNavGroup('SETTINGS', settingsNav)}
+          {renderNavGroup("MAIN", mainNav)}
+          {renderNavGroup("BOOKING", bookingNav)}
+          {renderNavGroup("BUSINESS", businessNav)}
+          {renderNavGroup("SETTINGS", settingsNav)}
         </nav>
       </div>
 

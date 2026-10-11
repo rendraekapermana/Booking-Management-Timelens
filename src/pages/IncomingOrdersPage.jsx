@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { bookingService } from "../services/bookingService.js";
-import OrderReviewModal from "../components/orders/OrderReviewModal.jsx";
-import Badge from "../components/ui/Badge.jsx";
 import Button from "../components/ui/Button.jsx";
+// 🔥 IMPOR GOOGLE CALENDAR
+import { syncBookingToGoogleCalendar } from "../services/calendarSync.js";
 
 export default function IncomingOrdersPage({ onNavigate, onShowToast }) {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const [selectedOrder, setSelectedOrder] = useState(null);
 
-  // Ambil data dari Supabase saat halaman dimuat
   const fetchOrders = async () => {
     setIsLoading(true);
     try {
@@ -29,7 +27,6 @@ export default function IncomingOrdersPage({ onNavigate, onShowToast }) {
     fetchOrders();
   }, []);
 
-  // Filtering System
   const filteredOrders = orders.filter((order) => {
     const statusMatch = order.status ? order.status.toLowerCase() : "";
     const matchesFilter =
@@ -57,39 +54,46 @@ export default function IncomingOrdersPage({ onNavigate, onShowToast }) {
     paid: orders.filter((o) => o.status?.toLowerCase() === "fully paid").length,
   };
 
-  const handleApprove = async (order) => {
+  // 🔥 FUNGSI UPDATE STATUS VIA DROPDOWN LENGKAP DENGAN CALENDAR SYNC
+  const handleStatusChange = async (order, newStatus) => {
     try {
-      const payload = {
-        ...order,
-        id: order.id,
-        status: "Confirmed",
-      };
-
+      const payload = { ...order, status: newStatus };
       const updatedData = await bookingService.update(payload);
 
       setOrders(orders.map((o) => (o.id === order.id ? updatedData : o)));
-      setSelectedOrder(null);
-      onShowToast(
-        `Pesanan "${order.eventName || order.eventTitle}" berhasil dikonfirmasi`,
-      );
-    } catch (error) {
-      console.error("Gagal mengkonfirmasi:", error);
-      onShowToast("Gagal mengkonfirmasi pesanan", "error");
-    }
-  };
 
-  const handleDecline = async (order) => {
-    try {
-      await bookingService.update({ id: order.id, status: "Rejected" });
-      setOrders(
-        orders.map((o) =>
-          o.id === order.id ? { ...o, status: "Rejected" } : o,
-        ),
-      );
-      setSelectedOrder(null);
-      onShowToast(`Pesanan "${order.eventName}" telah ditolak`);
+      // Pemicu Google Calendar Sync
+      if (newStatus === "Confirmed" || newStatus === "Fully Paid") {
+        const savedAccounts = JSON.parse(
+          localStorage.getItem("googleAccounts") || "[]",
+        );
+        if (savedAccounts.length > 0) {
+          savedAccounts.forEach(async (acc) => {
+            const success = await syncBookingToGoogleCalendar(
+              updatedData,
+              acc.accessToken,
+            );
+            if (success) console.log(`✅ Sinkronisasi sukses ke: ${acc.email}`);
+          });
+          onShowToast(
+            `Status: ${newStatus}. Jadwal masuk ke Google Calendar!`,
+            "success",
+          );
+        } else {
+          onShowToast(
+            `Status pesanan diperbarui menjadi ${newStatus}`,
+            "success",
+          );
+        }
+      } else {
+        onShowToast(
+          `Status pesanan diperbarui menjadi ${newStatus}`,
+          "success",
+        );
+      }
     } catch (error) {
-      onShowToast("Gagal menolak pesanan", "error");
+      console.error("Gagal mengubah status:", error);
+      onShowToast("Gagal mengubah status pesanan", "error");
     }
   };
 
@@ -201,7 +205,7 @@ export default function IncomingOrdersPage({ onNavigate, onShowToast }) {
             filteredOrders.map((order) => (
               <div
                 key={order.id}
-                onClick={() => setSelectedOrder(order)}
+                onClick={() => onNavigate("booking-detail", order)}
                 className="group bg-[#ffffff] hover:bg-[#f6f3ee]/60 rounded-xl p-5 md:p-6 shadow-xs border border-[#d3c3be]/40 transition-all duration-200 cursor-pointer"
               >
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
@@ -251,24 +255,61 @@ export default function IncomingOrdersPage({ onNavigate, onShowToast }) {
                     </span>
                   </div>
 
-                  {/* Status & Action */}
+                  {/* Status Dropdown & Action */}
                   <div className="md:col-span-2 flex items-center justify-between md:justify-end gap-3">
-                    <Badge
-                      variant={
-                        order.status === "Pending"
-                          ? "warning"
-                          : order.status === "Rejected"
-                            ? "error"
-                            : "success"
-                      }
-                    >
-                      {order.status}
-                    </Badge>
+                    {/* 🔥 DROPDOWN STATUS PENGGANTI BADGE */}
+                    <div className="relative inline-block">
+                      <select
+                        value={order.status}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) =>
+                          handleStatusChange(order, e.target.value)
+                        }
+                        className={`text-xs font-semibold rounded-lg pl-3 pr-8 py-1.5 border outline-none cursor-pointer appearance-none transition-colors shadow-xs ${
+                          order.status === "Pending"
+                            ? "bg-[#fff8e6] text-[#b38a22] border-[#ffe4a0]"
+                            : order.status === "Confirmed"
+                              ? "bg-[#eefcf2] text-[#22a04c] border-[#bbf2ce]" // Hijau
+                              : order.status === "Fully Paid"
+                                ? "bg-[#eff6ff] text-[#2563eb] border-[#bfdbfe]" // Biru
+                                : "bg-[#fef2f2] text-[#ef4444] border-[#fecaca]" // Merah
+                        }`}
+                      >
+                        {/* Option dipaksa putih agar tidak ikut warna background select */}
+                        <option
+                          value="Pending"
+                          className="bg-white text-[#1c1c19]"
+                        >
+                          Pending
+                        </option>
+                        <option
+                          value="Confirmed"
+                          className="bg-white text-[#1c1c19]"
+                        >
+                          Confirmed
+                        </option>
+                        <option
+                          value="Fully Paid"
+                          className="bg-white text-[#1c1c19]"
+                        >
+                          Fully Paid
+                        </option>
+                        <option
+                          value="Rejected"
+                          className="bg-white text-[#1c1c19]"
+                        >
+                          Rejected
+                        </option>
+                      </select>
+                      <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-[16px] pointer-events-none opacity-60">
+                        expand_more
+                      </span>
+                    </div>
+
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        // Kirim objek order lengkap atau ID-nya ke App.jsx agar selectedBooking tersetting dengan akurat
                         onNavigate("booking-detail", order);
                       }}
                       className="px-3 py-1.5 bg-[#f6f3ee] hover:bg-[#ebe8e3] text-[#090100] text-xs font-semibold rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
@@ -285,19 +326,6 @@ export default function IncomingOrdersPage({ onNavigate, onShowToast }) {
           )}
         </div>
       </div>
-
-      {/* Review Lead Dialog Modal */}
-      {selectedOrder && (
-        <OrderReviewModal
-          order={selectedOrder}
-          isOpen={Boolean(selectedOrder)}
-          onClose={() => setSelectedOrder(null)}
-          onApprove={handleApprove}
-          onDecline={handleDecline}
-          onShowToast={onShowToast}
-        />
-      )}
     </div>
   );
 }
-
