@@ -409,7 +409,6 @@ export default function App() {
           {currentView === "add-expense" && (
             <AddExpensePage
               onNavigate={navigate}
-              onAddExpense={handleAddExpense}
               expenseToEdit={expenseToEdit}
               onShowToast={showToast}
             />

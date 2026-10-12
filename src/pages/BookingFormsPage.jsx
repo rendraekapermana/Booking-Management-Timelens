@@ -1,23 +1,106 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 export default function BookingFormsPage({ onNavigate, onShowToast }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newFormName, setNewFormName] = useState('');
-  const [newSlug, setNewSlug] = useState('');
-  const [newDuration, setNewDuration] = useState('Standard Evening (4 Hours • Dual Strips)');
+  const [newFormName, setNewFormName] = useState("");
+  const [newSlug, setNewSlug] = useState("");
+  const [newDuration, setNewDuration] = useState(
+    "Standard Evening (4 Hours • Dual Strips)",
+  );
   const [requireDeposit, setRequireDeposit] = useState(true);
+
+  // 🔥 STATE UNTUK FORM BUILDER DINAMIS (Default Field)
+  const [formFields, setFormFields] = useState([
+    {
+      id: Date.now() + 1,
+      label: "Nama Lengkap",
+      type: "text",
+      required: true,
+      options: "",
+    },
+    {
+      id: Date.now() + 2,
+      label: "Nomor WhatsApp",
+      type: "text",
+      required: true,
+      options: "",
+    },
+    {
+      id: Date.now() + 3,
+      label: "Tanggal Acara",
+      type: "date",
+      required: true,
+      options: "",
+    },
+  ]);
 
   const publicUrl = `${window.location.origin}/#book/main-atelier`;
 
   const handleCopyLink = () => {
     navigator.clipboard?.writeText(publicUrl);
-    onShowToast('Public reservation URL copied to clipboard: ' + publicUrl);
+    onShowToast("Public reservation URL copied to clipboard: " + publicUrl);
   };
 
-  const handleCreateForm = (e) => {
+  // 🔥 FUNGSI MANIPULASI FIELD FORM
+  const handleAddField = () => {
+    setFormFields([
+      ...formFields,
+      { id: Date.now(), label: "", type: "text", required: false, options: "" },
+    ]);
+  };
+
+  const handleRemoveField = (id) => {
+    setFormFields(formFields.filter((f) => f.id !== id));
+  };
+
+  const handleUpdateField = (id, key, value) => {
+    setFormFields(
+      formFields.map((f) => (f.id === id ? { ...f, [key]: value } : f)),
+    );
+  };
+
+  // 🔥 SIMPAN FORM (Persiapan Integrasi Database)
+  const handleCreateForm = async (e) => {
     e.preventDefault();
+
+    // Payload data ini yang nantinya dikirim ke tabel `booking_forms` di Supabase
+    const payload = {
+      title: newFormName,
+      slug: newSlug,
+      duration_setup: newDuration,
+      require_deposit: requireDeposit,
+      form_schema: formFields, // ➔ Disimpan sebagai JSONB
+    };
+
+    console.log("Data Form yang akan disimpan ke DB:", payload);
+
+    // Di sini nanti ditaruh fungsi: await supabase.from('booking_forms').insert(payload)
+
     setShowCreateModal(false);
-    onShowToast(`New intake form "${newFormName || 'Custom Event Form'}" published!`);
+    onShowToast(
+      `New intake form "${newFormName || "Custom Event Form"}" published!`,
+      "success",
+    );
+
+    // Reset Form
+    setNewFormName("");
+    setNewSlug("");
+    setFormFields([
+      {
+        id: Date.now() + 1,
+        label: "Nama Lengkap",
+        type: "text",
+        required: true,
+        options: "",
+      },
+      {
+        id: Date.now() + 2,
+        label: "Nomor WhatsApp",
+        type: "text",
+        required: true,
+        options: "",
+      },
+    ]);
   };
 
   return (
@@ -34,7 +117,9 @@ export default function BookingFormsPage({ onNavigate, onShowToast }) {
             Booking Forms
           </h1>
           <p className="text-sm text-[#504440] leading-relaxed">
-            Manage public booking request forms for your website and social links. Captured submissions sync directly to your atelier calendar and lead archive.
+            Manage public booking request forms for your website and social
+            links. Captured submissions sync directly to your atelier calendar
+            and lead archive.
           </p>
         </div>
 
@@ -63,80 +148,9 @@ export default function BookingFormsPage({ onNavigate, onShowToast }) {
           </div>
           <div className="mt-4">
             <div className="text-2xl text-[#090100] font-serif font-bold">
-              142 <span className="text-xs text-[#504440] font-normal">Pesanan</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-[#504440] mt-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#2d633b]"></span>
-              <span>38 bulan ini · +18% vs bulan lalu</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-5 rounded-xl bg-[#ffffff] border border-[#d3c3be]/40 shadow-xs flex flex-col justify-between h-full">
-          <div className="flex items-center justify-between text-[#504440]">
-            <span className="text-[11px] uppercase tracking-wider text-[#855230] font-semibold">
-              Monthly Inquiries
-            </span>
-            <span className="material-symbols-outlined text-[20px] text-[#855230]">
-              inbox
-            </span>
-          </div>
-          <div className="mt-4">
-            <div className="text-2xl text-[#090100] font-serif font-bold">
-              28
-            </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-[#504440] mt-1">
-              <span className="material-symbols-outlined text-[14px] text-[#855230]">
-                trending_up
-              </span>
-              <span>+14% vs previous month</span>
-            </div>
-          </div>
-        </div>
-
-        <div
-          onClick={() => onNavigate('incoming-orders')}
-          className="p-5 rounded-xl bg-[#ffffff] border border-[#d3c3be]/40 shadow-xs flex flex-col justify-between h-full hover:bg-[#f6f3ee] transition-all cursor-pointer group"
-        >
-          <div className="flex items-center justify-between text-[#504440]">
-            <span className="text-[11px] uppercase tracking-wider text-[#855230] font-semibold flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#febb90] animate-pulse"></span>
-              Perlu Verifikasi
-            </span>
-            <span className="material-symbols-outlined text-[20px] text-[#855230] group-hover:text-[#090100] transition-colors">
-              pending_actions
-            </span>
-          </div>
-          <div className="mt-4">
-            <div className="text-2xl text-[#090100] font-serif font-bold flex items-baseline justify-between">
-              <span>15 <span className="text-xs text-[#504440] font-normal">Pesanan</span></span>
-              <span className="material-symbols-outlined text-[16px] text-[#827470] group-hover:text-[#090100] transition-colors">
-                arrow_forward
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-[#504440] mt-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#febb90]"></span>
-              <span className="text-[#855230] font-medium">Menunggu cek bukti transfer</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-5 rounded-xl bg-[#ffffff] border border-[#d3c3be]/40 shadow-xs flex flex-col justify-between h-full">
-          <div className="flex items-center justify-between text-[#504440]">
-            <span className="text-[11px] uppercase tracking-wider text-[#855230] font-semibold">
-              Latest Submission
-            </span>
-            <span className="material-symbols-outlined text-[20px] text-[#855230]">
-              schedule
-            </span>
-          </div>
-          <div className="mt-4">
-            <div className="text-2xl text-[#090100] font-serif font-bold">
-              2 jam lalu
-            </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-[#504440] mt-1">
-              <span className="text-[#090100] font-medium truncate">
-                Clara &amp; Julian Engagement
+              142{" "}
+              <span className="text-xs text-[#504440] font-normal">
+                Pesanan
               </span>
             </div>
           </div>
@@ -145,11 +159,9 @@ export default function BookingFormsPage({ onNavigate, onShowToast }) {
 
       {/* Main Grid: Live Form Container & Submissions List */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Form Detail (8 cols) */}
         <div className="lg:col-span-8 flex flex-col gap-6">
           <div className="bg-[#ffffff] rounded-xl shadow-xs border border-[#d3c3be]/40 p-8 flex flex-col justify-between">
             <div className="flex flex-col gap-6">
-              {/* Status Header */}
               <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#f0ede9] pb-5">
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <span className="px-2.5 py-0.5 rounded-full bg-[#c7ecce] text-[#01210f] text-xs font-semibold tracking-wide inline-flex items-center gap-1.5">
@@ -159,40 +171,23 @@ export default function BookingFormsPage({ onNavigate, onShowToast }) {
                   <span className="text-xs text-[#504440] tracking-wider uppercase font-mono font-bold">
                     FORM-01
                   </span>
-                  <span className="px-2.5 py-0.5 rounded bg-[#f0ede9] text-[#855230] text-xs font-medium">
-                    Direct Reservation Flow
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 text-xs text-[#504440]">
-                  <span className="flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[15px] text-[#855230]">check_circle</span>
-                    Instant Retainer
-                  </span>
-                  <span className="w-1 h-1 rounded-full bg-[#d3c3be]"></span>
-                  <span className="flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[15px] text-[#855230]">sync</span>
-                    Calendar Sync
-                  </span>
                 </div>
               </div>
 
-              {/* Title */}
               <div>
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                   <h2 className="text-2xl text-[#090100] font-serif font-bold">
                     Timelens Official Event Booking Form
                   </h2>
-                  <span className="px-3 py-1 bg-[#f6f3ee] rounded-lg font-mono text-xs text-[#855230] font-semibold shrink-0">
-                    142 Submissions
-                  </span>
                 </div>
               </div>
 
-              {/* Public Share URL Box */}
               <div className="p-4 rounded-xl bg-[#f6f3ee] border border-[#d3c3be]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-8 h-8 rounded-lg bg-[#ebe8e3] flex items-center justify-center shrink-0 text-[#855230]">
-                    <span className="material-symbols-outlined text-[18px]">link</span>
+                    <span className="material-symbols-outlined text-[18px]">
+                      link
+                    </span>
                   </div>
                   <div className="flex flex-col min-w-0">
                     <span className="text-[11px] text-[#504440] uppercase tracking-wider font-semibold">
@@ -206,237 +201,240 @@ export default function BookingFormsPage({ onNavigate, onShowToast }) {
 
                 <div className="flex items-center gap-2 shrink-0">
                   <button
-                    type="button"
                     onClick={handleCopyLink}
-                    className="px-3.5 py-1.5 bg-[#ffffff] hover:bg-[#fcf9f4] text-[#855230] hover:text-[#090100] text-xs font-semibold rounded-lg shadow-xs border border-[#d3c3be]/40 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-1.5 bg-[#ffffff] text-[#855230] text-xs font-semibold rounded-lg border border-[#d3c3be]/40 shadow-xs cursor-pointer inline-flex items-center gap-1.5 hover:bg-[#fcf9f4]"
                   >
-                    <span className="material-symbols-outlined text-[16px]">content_copy</span>
-                    <span>Copy Link</span>
+                    <span className="material-symbols-outlined text-[16px]">
+                      content_copy
+                    </span>{" "}
+                    Copy Link
                   </button>
-
                   <button
-                    type="button"
-                    onClick={() => onNavigate('public-booking')}
-                    className="px-3.5 py-1.5 bg-[#ffffff] hover:bg-[#fcf9f4] text-[#855230] hover:text-[#090100] text-xs font-semibold rounded-lg shadow-xs border border-[#d3c3be]/40 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                    onClick={() => onNavigate("public-booking")}
+                    className="px-3.5 py-1.5 bg-[#ffffff] text-[#855230] text-xs font-semibold rounded-lg border border-[#d3c3be]/40 shadow-xs cursor-pointer inline-flex items-center gap-1.5 hover:bg-[#fcf9f4]"
                   >
-                    <span className="material-symbols-outlined text-[16px]">open_in_new</span>
-                    <span>Preview</span>
+                    <span className="material-symbols-outlined text-[16px]">
+                      open_in_new
+                    </span>{" "}
+                    Preview
                   </button>
                 </div>
               </div>
-            </div>
-
-            {/* Bottom Actions */}
-            <div className="pt-6 mt-6 border-t border-[#f0ede9] flex flex-wrap items-center justify-between gap-4">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => onNavigate('public-booking')}
-                  className="px-4 py-2 bg-[#2c1810] text-[#fcf9f4] hover:bg-[#090100] text-xs font-semibold rounded-lg shadow-xs transition-colors inline-flex items-center gap-2 cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px]">open_in_new</span>
-                  <span>Open Live Form</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => onNavigate('edit-booking-form')}
-                  className="px-4 py-2 bg-[#f0ede9] hover:bg-[#ebe8e3] text-[#090100] text-xs font-semibold rounded-lg transition-colors inline-flex items-center gap-2 cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px]">tune</span>
-                  <span>Edit Settings</span>
-                </button>
-              </div>
-
-              <div className="flex items-center gap-2 text-[#504440] text-xs">
-                <span className="material-symbols-outlined text-[16px] text-[#855230]">history</span>
-                <span>Updated 3 days ago by Clara V.</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Recent Form Submissions (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          <div className="bg-[#ffffff] rounded-xl shadow-xs border border-[#d3c3be]/40 p-6 flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-[#f0ede9] pb-3">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#855230] text-[20px]">
-                  receipt_long
-                </span>
-                <span className="text-sm text-[#090100] font-semibold">
-                  Recent Form Submissions
-                </span>
-              </div>
-              <span className="text-[11px] text-[#855230] font-mono font-medium">3 Terbaru</span>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <div className="p-3 rounded-lg bg-[#f6f3ee] border border-[#d3c3be]/30 flex items-start justify-between gap-2">
-                <div className="flex flex-col min-w-0">
-                  <span className="text-xs text-[#090100] font-semibold truncate">
-                    Sarah &amp; Dimas
-                  </span>
-                  <span className="text-[11px] text-[#504440]">
-                    Wedding Reception · 4 Jam
-                  </span>
-                  <span className="text-[10px] text-[#827470] font-mono mt-0.5">
-                    25 Menit yang lalu
-                  </span>
-                </div>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#c7ecce] text-[#01210f] whitespace-nowrap">
-                  DP Terverifikasi
-                </span>
-              </div>
-
-              <div className="p-3 rounded-lg bg-[#f6f3ee] border border-[#d3c3be]/30 flex items-start justify-between gap-2">
-                <div className="flex flex-col min-w-0">
-                  <span className="text-xs text-[#090100] font-semibold truncate">
-                    Bank Mandiri Gala
-                  </span>
-                  <span className="text-[11px] text-[#504440]">
-                    Corporate Annual Dinner · 6 Jam
-                  </span>
-                  <span className="text-[10px] text-[#827470] font-mono mt-0.5">
-                    2 Jam yang lalu
-                  </span>
-                </div>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#c7ecce] text-[#01210f] whitespace-nowrap">
-                  Lunas
-                </span>
-              </div>
-
-              <div className="p-3 rounded-lg bg-[#f6f3ee] border border-[#d3c3be]/30 flex items-start justify-between gap-2">
-                <div className="flex flex-col min-w-0">
-                  <span className="text-xs text-[#090100] font-semibold truncate">
-                    Arka &amp; Nadira
-                  </span>
-                  <span className="text-[11px] text-[#504440]">
-                    Intimate Engagement · 2 Jam
-                  </span>
-                  <span className="text-[10px] text-[#827470] font-mono mt-0.5">
-                    Kemarin, 19:40
-                  </span>
-                </div>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#ffdbc7] text-[#693b1b] whitespace-nowrap">
-                  Menunggu DP
-                </span>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-[#f0ede9] flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => onNavigate('incoming-orders')}
-                className="text-[#855230] hover:text-[#090100] text-xs font-semibold inline-flex items-center gap-1 transition-colors cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[16px]">inbox</span>
-                <span>Buka Semua Antrean Pesanan</span>
-              </button>
-              <span className="material-symbols-outlined text-[16px] text-[#827470]">
-                chevron_right
-              </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Modal: Create New Form */}
+      {/* 🔥 MODAL CREATE NEW FORM (Diperlebar untuk Form Builder) */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 bg-[#090100]/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#ffffff] rounded-2xl max-w-lg w-full p-8 shadow-2xl relative border border-[#d3c3be]/40 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-start justify-between pb-4 border-b border-[#f0ede9]">
+          <div className="bg-[#ffffff] rounded-2xl max-w-3xl w-full p-8 shadow-2xl relative border border-[#d3c3be]/40 flex flex-col max-h-[90vh]">
+            <div className="flex items-start justify-between pb-4 border-b border-[#f0ede9] shrink-0">
               <div className="flex flex-col">
                 <span className="text-[11px] text-[#855230] uppercase tracking-widest font-semibold">
-                  New Intake Channel
+                  Dynamic Engine
                 </span>
                 <h3 className="text-2xl text-[#090100] font-serif font-bold mt-0.5">
-                  Create Booking Form
+                  Create Custom Booking Form
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="p-1 rounded-lg text-[#504440] hover:bg-[#f6f3ee]"
+                className="p-1 rounded-lg text-[#504440] hover:bg-[#f6f3ee] cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <span className="material-symbols-outlined text-[20px]">
+                  close
+                </span>
               </button>
             </div>
 
-            <form onSubmit={handleCreateForm} className="space-y-4 pt-4">
-              <div className="space-y-1">
-                <label className="text-xs uppercase tracking-wider text-[#504440] font-semibold">
-                  Form Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Autumn Vintage Weddings 2025"
-                  value={newFormName}
-                  onChange={(e) => setNewFormName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-lg bg-[#f6f3ee] text-[#090100] text-sm focus:outline-none focus:bg-[#ffffff] border border-[#d3c3be]/40"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs uppercase tracking-wider text-[#504440] font-semibold">
-                  Public URL Slug
-                </label>
-                <div className="flex items-center bg-[#f6f3ee] rounded-lg px-3 py-2 border border-[#d3c3be]/40">
-                  <span className="text-xs text-[#827470] font-mono">timelens.studio/book/</span>
-                  <input
-                    type="text"
-                    placeholder="autumn-2025"
-                    value={newSlug}
-                    onChange={(e) => setNewSlug(e.target.value)}
-                    className="bg-transparent flex-1 text-[#090100] font-mono text-xs focus:outline-none pl-1"
-                    required
-                  />
+            <form
+              onSubmit={handleCreateForm}
+              className="pt-4 overflow-y-auto pr-2 space-y-6 flex-1"
+            >
+              {/* SECTION 1: Basic Info */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-bold text-[#855230] uppercase tracking-wider border-b border-[#f0ede9] pb-2">
+                  1. Form Settings
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs uppercase tracking-wider text-[#504440] font-semibold">
+                      Form Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Autumn Vintage Weddings 2025"
+                      value={newFormName}
+                      onChange={(e) => setNewFormName(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-lg bg-[#f6f3ee] text-[#090100] text-sm focus:outline-none focus:bg-[#ffffff] border border-[#d3c3be]/40"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs uppercase tracking-wider text-[#504440] font-semibold">
+                      URL Slug
+                    </label>
+                    <div className="flex items-center bg-[#f6f3ee] rounded-lg px-3 py-2.5 border border-[#d3c3be]/40">
+                      <span className="text-xs text-[#827470] font-mono">
+                        timelens/
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="autumn-2025"
+                        value={newSlug}
+                        onChange={(e) => setNewSlug(e.target.value)}
+                        className="bg-transparent flex-1 text-[#090100] font-mono text-sm focus:outline-none pl-1"
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs uppercase tracking-wider text-[#504440] font-semibold">
-                  Default Duration &amp; Setup
-                </label>
-                <select
-                  value={newDuration}
-                  onChange={(e) => setNewDuration(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-lg bg-[#f6f3ee] text-[#090100] text-sm focus:outline-none border border-[#d3c3be]/40"
-                >
-                  <option>Flexible Client Selection (Custom Duration &amp; Specs)</option>
-                  <option>Standard Evening (4 Hours • Dual Strips)</option>
-                  <option>Intimate Session (2 Hours • Matte 4x6)</option>
-                  <option>Full Gala Experience (6–8 Hours • Unlimited Strips + Audio Guestbook)</option>
-                </select>
-              </div>
+              {/* 🔥 SECTION 2: Form Builder */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-bold text-[#855230] uppercase tracking-wider border-b border-[#f0ede9] pb-2 flex justify-between items-center">
+                  <span>2. Form Fields (Questions)</span>
+                  <button
+                    type="button"
+                    onClick={handleAddField}
+                    className="text-xs bg-[#f6f3ee] px-2 py-1 rounded text-[#090100] hover:bg-[#ebe8e3] cursor-pointer inline-flex items-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">
+                      add
+                    </span>{" "}
+                    Add Field
+                  </button>
+                </h4>
 
-              <div className="flex items-center justify-between p-3.5 rounded-lg bg-[#f6f3ee] border border-[#d3c3be]/30 mt-2">
-                <div className="flex flex-col">
-                  <span className="text-xs text-[#090100] font-semibold">Require Initial Retainer</span>
-                  <span className="text-[11px] text-[#504440]">Collect minimum 50% deposit upon form submission</span>
+                <div className="flex flex-col gap-3">
+                  {formFields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="p-3.5 bg-[#ffffff] border border-[#d3c3be]/60 rounded-xl shadow-xs flex flex-col gap-3 relative group"
+                    >
+                      {/* Tombol Hapus Field */}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveField(field.id)}
+                        className="absolute top-3 right-3 text-[#827470] hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          delete
+                        </span>
+                      </button>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pr-8">
+                        <div className="sm:col-span-6 space-y-1">
+                          <label className="text-[10px] font-bold text-[#504440] uppercase">
+                            Question Label
+                          </label>
+                          <input
+                            type="text"
+                            value={field.label}
+                            onChange={(e) =>
+                              handleUpdateField(
+                                field.id,
+                                "label",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="e.g. Tipe Kertas Foto"
+                            className="w-full px-3 py-1.5 text-sm bg-[#f6f3ee] border border-transparent focus:border-[#d3c3be] rounded-md outline-none"
+                            required
+                          />
+                        </div>
+
+                        <div className="sm:col-span-4 space-y-1">
+                          <label className="text-[10px] font-bold text-[#504440] uppercase">
+                            Input Type
+                          </label>
+                          <select
+                            value={field.type}
+                            onChange={(e) =>
+                              handleUpdateField(
+                                field.id,
+                                "type",
+                                e.target.value,
+                              )
+                            }
+                            className="w-full px-3 py-1.5 text-sm bg-[#f6f3ee] border border-transparent focus:border-[#d3c3be] rounded-md outline-none cursor-pointer appearance-none"
+                          >
+                            <option value="text">Short Text</option>
+                            <option value="textarea">Long Text (Notes)</option>
+                            <option value="select">Dropdown Menu</option>
+                            <option value="date">Date Picker</option>
+                          </select>
+                        </div>
+
+                        <div className="sm:col-span-2 flex items-center pt-5">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={field.required}
+                              onChange={(e) =>
+                                handleUpdateField(
+                                  field.id,
+                                  "required",
+                                  e.target.checked,
+                                )
+                              }
+                              className="w-4 h-4 accent-[#2c1810]"
+                            />
+                            <span className="text-xs font-semibold text-[#1c1c19]">
+                              Required
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Tampilkan Input Options Khusus untuk Tipe "select" */}
+                      {field.type === "select" && (
+                        <div className="w-full">
+                          <label className="text-[10px] font-bold text-[#504440] uppercase">
+                            Dropdown Options (Pisahkan dengan koma)
+                          </label>
+                          <input
+                            type="text"
+                            value={field.options}
+                            onChange={(e) =>
+                              handleUpdateField(
+                                field.id,
+                                "options",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="e.g. Hitam, Putih, Merah Marun"
+                            className="w-full px-3 py-1.5 mt-1 text-sm bg-[#fcf9f4] border border-[#d3c3be]/40 rounded-md outline-none focus:border-[#855230]"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {formFields.length === 0 && (
+                    <div className="text-center p-6 text-sm text-[#827470] border border-dashed border-[#d3c3be] rounded-xl">
+                      Belum ada field pertanyaan. Klik "Add Field" di atas.
+                    </div>
+                  )}
                 </div>
-                <input
-                  type="checkbox"
-                  checked={requireDeposit}
-                  onChange={(e) => setRequireDeposit(e.target.checked)}
-                  className="w-4 h-4 accent-[#2c1810]"
-                />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#f0ede9]">
+              <div className="flex items-center justify-end gap-3 pt-6 border-t border-[#f0ede9] shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 text-xs font-semibold text-[#504440]"
+                  className="px-4 py-2 text-xs font-semibold text-[#504440] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-[#2c1810] text-[#fcf9f4] hover:bg-[#090100] text-xs font-semibold rounded-lg shadow-sm"
+                  className="px-5 py-2.5 bg-[#2c1810] text-[#fcf9f4] hover:bg-[#090100] text-xs font-semibold rounded-lg shadow-sm cursor-pointer"
                 >
-                  Publish Form
+                  Publish Form to Database
                 </button>
               </div>
             </form>

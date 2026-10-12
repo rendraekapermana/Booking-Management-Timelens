@@ -1,29 +1,67 @@
-/**
- * Expenses Service Layer
- * Abstracts data access to enable clean future Supabase migration.
- */
-
-import { initialExpenses } from '../lib/mock/mockData.js';
-
-let expensesState = [...initialExpenses];
+import { supabase } from "../lib/supabase.js";
 
 export const expenseService = {
+  // 1. Ambil semua data
   getAll: async () => {
-    return Promise.resolve([...expensesState]);
+    try {
+      const { data, error } = await supabase
+        .from("expenses")
+        .select("*")
+        .order("date", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error fetching expenses:", error);
+      throw error;
+    }
   },
 
-  create: async (newExpense) => {
-    expensesState = [newExpense, ...expensesState];
-    return Promise.resolve(newExpense);
-  },
-
-  update: async (updatedExpense) => {
-    expensesState = expensesState.map(e => (e.id === updatedExpense.id ? updatedExpense : e));
-    return Promise.resolve(updatedExpense);
-  },
-
+  // 2. Hapus data
   delete: async (id) => {
-    expensesState = expensesState.filter(e => e.id !== id);
-    return Promise.resolve(id);
-  }
+    try {
+      const { error } = await supabase.from("expenses").delete().eq("id", id);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error("Error deleting expense:", error);
+      throw error;
+    }
+  },
+
+  // 🔥 3. SIMPAN DATA BARU (CREATE)
+  create: async (expenseData) => {
+    try {
+      const { data, error } = await supabase
+        .from("expenses")
+        .insert([expenseData])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error creating expense:", error);
+      throw error;
+    }
+  },
+
+  // 🔥 4. UPDATE DATA (EDIT)
+  update: async (id, updatedData) => {
+    try {
+      const { data, error } = await supabase
+        .from("expenses")
+        .update(updatedData)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error updating expense:", error);
+      throw error;
+    }
+  },
 };
