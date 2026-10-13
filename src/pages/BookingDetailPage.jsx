@@ -68,7 +68,7 @@ const EventProfileCard = ({ booking, onStatusChange }) => (
         </h2>
       </div>
 
-      {/* 🔥 DROPDOWN STATUS PENGGANTI BADGE */}
+      {/* DROPDOWN STATUS PENGGANTI BADGE */}
       <div className="relative inline-block">
         <select
           value={booking.status}
@@ -77,13 +77,12 @@ const EventProfileCard = ({ booking, onStatusChange }) => (
             booking.status === "Pending"
               ? "bg-[#fff8e6] text-[#b38a22] border-[#ffe4a0]"
               : booking.status === "Confirmed"
-                ? "bg-[#eefcf2] text-[#22a04c] border-[#bbf2ce]" // Hijau
+                ? "bg-[#eefcf2] text-[#22a04c] border-[#bbf2ce]"
                 : booking.status === "Fully Paid"
-                  ? "bg-[#eff6ff] text-[#2563eb] border-[#bfdbfe]" // Biru
-                  : "bg-[#fef2f2] text-[#ef4444] border-[#fecaca]" // Merah
+                  ? "bg-[#eff6ff] text-[#2563eb] border-[#bfdbfe]"
+                  : "bg-[#fef2f2] text-[#ef4444] border-[#fecaca]"
           }`}
         >
-          {/* Option dipaksa putih agar tidak ikut warna background select */}
           <option value="Pending" className="bg-white text-[#1c1c19]">
             Pending
           </option>
@@ -160,7 +159,6 @@ const EventProfileCard = ({ booking, onStatusChange }) => (
             </span>
           </div>
         </div>
-
         {booking.venueMapsLink ? (
           <a
             href={booking.venueMapsLink}
@@ -201,7 +199,6 @@ const CustomerProfileCard = ({ booking }) => (
         </h2>
       </div>
     </div>
-
     <div className="flex items-center gap-4">
       <div className="w-14 h-14 rounded-full bg-[#ffdbc7] flex items-center justify-center text-[#311300] font-serif font-bold text-xl shrink-0">
         {booking.customerName
@@ -219,7 +216,6 @@ const CustomerProfileCard = ({ booking }) => (
         </span>
       </div>
     </div>
-
     <div className="flex flex-col gap-2.5 pt-2">
       <a
         href={`https://wa.me/${booking.customerPhone?.replace(/\D/g, "")}`}
@@ -244,7 +240,6 @@ const CustomerProfileCard = ({ booking }) => (
         </span>
       </a>
     </div>
-
     {booking.uploadedFileName && (
       <a
         href={booking.uploadedFileName}
@@ -291,21 +286,37 @@ export default function BookingDetailPage(props) {
         downPayment: passedBooking.downPayment || 0,
         status: passedBooking.status || "Pending",
         uploadedFileName: passedBooking.uploadedFileName || null,
+        hppAmount: passedBooking.hppAmount || passedBooking.hpp_amount || 0,
       });
       setIsLoading(false);
       return;
     }
 
     const fetchBooking = async () => {
-      if (!passedId) {
-        setIsLoading(false);
-        return;
-      }
+      if (!passedId) return;
       setIsLoading(true);
       try {
         const data = await bookingService.getById(passedId);
         setBooking(data);
-        // ... (inisialisasi editData sama dengan di atas)
+        setEditData({
+          eventName: data.eventName || "",
+          customerName: data.customerName || "",
+          customerPhone: data.customerPhone || "",
+          customerEmail: data.customerEmail || "",
+          date: data.date || "",
+          time: data.time || "",
+          duration: data.duration || "4 hours",
+          venueName: data.venueName || "",
+          venueMapsLink: data.venueMapsLink || "",
+          backdrop: data.backdrop || "Standard",
+          paperType: data.paperType || "Photostrip",
+          frameDesign: data.frameDesign || "-",
+          totalPrice: data.totalPrice || 0,
+          downPayment: data.downPayment || 0,
+          status: data.status || "Pending",
+          uploadedFileName: data.uploadedFileName || null,
+          hppAmount: data.hppAmount || data.hpp_amount || 0,
+        });
       } catch (error) {
         if (props.onShowToast)
           props.onShowToast("Gagal memuat detail pesanan", "error");
@@ -322,9 +333,10 @@ export default function BookingDetailPage(props) {
       const payload = {
         ...booking,
         ...editData,
+        hppAmount: Number(editData.hppAmount || 0),
+        totalPrice: Number(editData.totalPrice || 0),
         id: booking.id,
       };
-
       const updatedData = await bookingService.update(payload);
       setBooking(updatedData);
       if (props.onUpdateBooking) props.onUpdateBooking(updatedData);
@@ -337,12 +349,10 @@ export default function BookingDetailPage(props) {
     }
   };
 
-  // 🔥 FUNGSI UPDATE STATUS VIA DROPDOWN (DETAIL PAGE)
   const handleStatusChange = async (newStatus) => {
     try {
       const payload = { ...booking, status: newStatus };
       const updatedData = await bookingService.update(payload);
-
       setBooking(updatedData);
       if (props.onUpdateBooking) props.onUpdateBooking(updatedData);
 
@@ -443,6 +453,7 @@ export default function BookingDetailPage(props) {
         onRecordPayment={handleRecordPayment}
       />
 
+      {/* 🔥 MODAL EDIT YANG SUDAH DIRAPIKAN BERDASARKAN SEGMEN */}
       {isEditing && (
         <div className="fixed inset-0 z-50 bg-[#090100]/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#ffffff] rounded-2xl max-w-xl w-full p-8 shadow-2xl relative border border-[#d3c3be]/40">
@@ -460,95 +471,225 @@ export default function BookingDetailPage(props) {
                 </span>
               </button>
             </div>
+
             <form
               onSubmit={handleSaveEdit}
-              className="space-y-4 pt-4 max-h-[70vh] overflow-y-auto pr-1"
+              className="space-y-6 pt-4 max-h-[70vh] overflow-y-auto pr-2"
             >
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#504440]">
-                  Event Name
-                </label>
-                <input
-                  type="text"
-                  value={editData.eventName || ""}
-                  onChange={(e) =>
-                    setEditData({ ...editData, eventName: e.target.value })
-                  }
-                  className="w-full p-2.5 text-xs bg-[#f6f3ee] rounded-lg border border-[#d3c3be]/40 text-[#090100]"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+              {/* --- 1. GENERAL & LOCATION --- */}
+              <div className="space-y-3">
+                <h4 className="text-[11px] font-bold text-[#855230] uppercase tracking-wider border-b border-[#f0ede9] pb-1.5 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[14px]">
+                    event
+                  </span>{" "}
+                  General & Location
+                </h4>
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-[#504440]">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    value={editData.date || ""}
-                    onChange={(e) =>
-                      setEditData({ ...editData, date: e.target.value })
-                    }
-                    className="w-full p-2.5 text-xs bg-[#f6f3ee] rounded-lg border border-[#d3c3be]/40 text-[#090100]"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-[#504440]">
-                    Time
+                    Event Name
                   </label>
                   <input
                     type="text"
-                    value={editData.time || ""}
+                    value={editData.eventName || ""}
                     onChange={(e) =>
-                      setEditData({ ...editData, time: e.target.value })
+                      setEditData({ ...editData, eventName: e.target.value })
                     }
                     className="w-full p-2.5 text-xs bg-[#f6f3ee] rounded-lg border border-[#d3c3be]/40 text-[#090100]"
                   />
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[#504440]">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      value={editData.date || ""}
+                      onChange={(e) =>
+                        setEditData({ ...editData, date: e.target.value })
+                      }
+                      className="w-full p-2.5 text-xs bg-[#f6f3ee] rounded-lg border border-[#d3c3be]/40 text-[#090100]"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[#504440]">
+                      Time
+                    </label>
+                    <input
+                      type="text"
+                      value={editData.time || ""}
+                      onChange={(e) =>
+                        setEditData({ ...editData, time: e.target.value })
+                      }
+                      className="w-full p-2.5 text-xs bg-[#f6f3ee] rounded-lg border border-[#d3c3be]/40 text-[#090100]"
+                    />
+                  </div>
+                </div>
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-[#504440]">
-                    Customer Name
+                    Venue Name &amp; Address
                   </label>
                   <input
                     type="text"
-                    value={editData.customerName || ""}
+                    value={editData.venueName || ""}
                     onChange={(e) =>
-                      setEditData({ ...editData, customerName: e.target.value })
+                      setEditData({ ...editData, venueName: e.target.value })
                     }
                     className="w-full p-2.5 text-xs bg-[#f6f3ee] rounded-lg border border-[#d3c3be]/40 text-[#090100]"
                   />
+                </div>
+              </div>
+
+              {/* --- 2. CUSTOMER PROFILE --- */}
+              <div className="space-y-3">
+                <h4 className="text-[11px] font-bold text-[#855230] uppercase tracking-wider border-b border-[#f0ede9] pb-1.5 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[14px]">
+                    person
+                  </span>{" "}
+                  Customer Profile
+                </h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[#504440]">
+                      Customer Name
+                    </label>
+                    <input
+                      type="text"
+                      value={editData.customerName || ""}
+                      onChange={(e) =>
+                        setEditData({
+                          ...editData,
+                          customerName: e.target.value,
+                        })
+                      }
+                      className="w-full p-2.5 text-xs bg-[#f6f3ee] rounded-lg border border-[#d3c3be]/40 text-[#090100]"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[#504440]">
+                      Phone
+                    </label>
+                    <input
+                      type="text"
+                      value={editData.customerPhone || ""}
+                      onChange={(e) =>
+                        setEditData({
+                          ...editData,
+                          customerPhone: e.target.value,
+                        })
+                      }
+                      className="w-full p-2.5 text-xs bg-[#f6f3ee] rounded-lg border border-[#d3c3be]/40 text-[#090100]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* --- 3. PHOTOBOOTH CONFIG & FINANCIALS (TERMASUK HPP) --- */}
+              <div className="space-y-3">
+                <h4 className="text-[11px] font-bold text-[#855230] uppercase tracking-wider border-b border-[#f0ede9] pb-1.5 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[14px]">
+                    tune
+                  </span>{" "}
+                  Photobooth Config & Financials
+                </h4>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[#504440]">
+                      Backdrop
+                    </label>
+                    <input
+                      type="text"
+                      value={editData.backdrop || ""}
+                      onChange={(e) =>
+                        setEditData({ ...editData, backdrop: e.target.value })
+                      }
+                      className="w-full p-2.5 text-xs bg-[#f6f3ee] rounded-lg border border-[#d3c3be]/40 text-[#090100]"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[#504440]">
+                      Paper Type
+                    </label>
+                    <input
+                      type="text"
+                      value={editData.paperType || ""}
+                      onChange={(e) =>
+                        setEditData({ ...editData, paperType: e.target.value })
+                      }
+                      className="w-full p-2.5 text-xs bg-[#f6f3ee] rounded-lg border border-[#d3c3be]/40 text-[#090100]"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-[#504440]">
-                    Phone
+                    Frame Design
                   </label>
                   <input
                     type="text"
-                    value={editData.customerPhone || ""}
+                    value={editData.frameDesign || ""}
                     onChange={(e) =>
-                      setEditData({
-                        ...editData,
-                        customerPhone: e.target.value,
-                      })
+                      setEditData({ ...editData, frameDesign: e.target.value })
                     }
                     className="w-full p-2.5 text-xs bg-[#f6f3ee] rounded-lg border border-[#d3c3be]/40 text-[#090100]"
                   />
                 </div>
+
+                {/* Box Khusus Uang & Modal (HPP & Omzet saling berdampingan) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 bg-[#fcf9f4] p-3 rounded-lg border border-[#ebe4da]">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[#2d633b]">
+                      Total Omzet / Gross (Rp)
+                    </label>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-3 text-xs font-mono font-bold text-[#2d633b]">
+                        Rp
+                      </span>
+                      <input
+                        type="number"
+                        value={editData.totalPrice || ""}
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            totalPrice: e.target.value,
+                          })
+                        }
+                        className="w-full pl-9 p-2 text-xs bg-[#ffffff] rounded-lg border border-[#bbf2ce] text-[#090100] font-mono font-semibold"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[#ba1a1a]">
+                      HPP / Modal Event (Rp)
+                    </label>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-3 text-xs font-mono font-bold text-[#ba1a1a]">
+                        Rp
+                      </span>
+                      <input
+                        type="number"
+                        value={editData.hppAmount || ""}
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            hppAmount: e.target.value,
+                          })
+                        }
+                        className="w-full pl-9 p-2 text-xs bg-[#ffffff] rounded-lg border border-[#fecaca] text-[#090100] font-mono font-semibold"
+                      />
+                    </div>
+                  </div>
+                  <div className="col-span-full pt-1">
+                    <span className="text-[10px] text-[#827470] leading-tight block">
+                      * <strong>Total Omzet</strong> = Harga jual paket ke
+                      klien.
+                      <br />* <strong>HPP</strong> = Perkiraan modal print/crew
+                      event (Akan masuk ke <i>Operational Pocket</i>).
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#504440]">
-                  Venue Name &amp; Address
-                </label>
-                <input
-                  type="text"
-                  value={editData.venueName || ""}
-                  onChange={(e) =>
-                    setEditData({ ...editData, venueName: e.target.value })
-                  }
-                  className="w-full p-2.5 text-xs bg-[#f6f3ee] rounded-lg border border-[#d3c3be]/40 text-[#090100]"
-                />
-              </div>
+
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#f0ede9]">
                 <Button variant="outline" onClick={() => setIsEditing(false)}>
                   Cancel

@@ -1,8 +1,3 @@
-/**
- * Booking Service Layer
- * Fully synchronized with Supabase PostgreSQL
- */
-
 import { supabase } from "../lib/supabase.js";
 
 // --- HELPER MAPPING ---
@@ -18,7 +13,7 @@ const mapToUI = (dbItem) => ({
   time: dbItem.time || "10:00 - 14:00",
   duration: dbItem.duration || "4 hours",
 
-  // 🔥 PERBAIKAN ALAMAT DAN GMAPS LINK
+  // Venue & GMaps
   venueName: dbItem.venue_name || "-",
   venueMapsLink: dbItem.venue_maps_link || null,
 
@@ -27,6 +22,10 @@ const mapToUI = (dbItem) => ({
   frameDesign: dbItem.frame_design || "Dibuatkan oleh Timelens",
   totalPrice: dbItem.total_price || 0,
   downPayment: dbItem.down_payment || 0,
+
+  // 🔥 MAPPING HPP / MODAL EVENT
+  hppAmount: dbItem.hpp_amount || 0,
+
   remainingDue: (dbItem.total_price || 0) - (dbItem.down_payment || 0),
   status: dbItem.status || "Pending",
   uploadedFileName: dbItem.uploaded_file_name || null,
@@ -50,7 +49,6 @@ const mapToDB = (uiItem) => ({
   time: uiItem.eventTime || uiItem.time || "-",
   duration: uiItem.duration || "-",
 
-  // 🔥 PERBAIKAN PAYLOAD: venue_address dihapus, diganti venue_name dan venue_maps_link
   venue_name: uiItem.venueName || uiItem.venue_name || "-",
   venue_maps_link: uiItem.venueMapsLink || uiItem.venue_maps_link || null,
 
@@ -60,6 +58,11 @@ const mapToDB = (uiItem) => ({
     uiItem.designFrame || uiItem.frameDesign || uiItem.frame_design || "-",
   total_price: uiItem.totalPrice || uiItem.total_price || 0,
   down_payment: uiItem.downPayment || uiItem.down_payment || 0,
+
+  // 🔥 MAPPING HPP KE KOLOM DATABASE (Pastikan kolom hpp_amount ada di Supabase, atau biarkan kosong jika pakai migrasi on-the-fly)
+  hpp_amount:
+    uiItem.hppAmount !== undefined ? uiItem.hppAmount : uiItem.hpp_amount || 0,
+
   status: uiItem.status || "Pending",
   uploaded_file_name:
     uiItem.uploadedFileName || uiItem.uploaded_file_name || null,
@@ -85,7 +88,6 @@ export const bookingService = {
   },
 
   getById: async (id) => {
-    // 🔥 PERBAIKAN TYPO: Menghapus "xmlns =" yang sebelumnya ada di kodinganmu
     const { data, error } = await supabase
       .from("bookings")
       .select("*")
