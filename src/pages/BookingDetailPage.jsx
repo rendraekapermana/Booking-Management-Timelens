@@ -39,7 +39,7 @@ const DetailHeader = ({ booking, onNavigate, onOpenEdit, onOpenPayment }) => (
         variant="secondary"
         size="sm"
         icon="download"
-        onClick={() => onNavigate("invoice-preview")}
+        onClick={() => onNavigate("invoice-preview", booking)}
       >
         Download Invoice
       </Button>

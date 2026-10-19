@@ -19,7 +19,6 @@ export default function Sidebar({ currentView, onNavigate, onLogout }) {
 
   const settingsNav = [
     { id: "invoice-settings", label: "Invoice Settings", icon: "tune" },
-    // 🔥 MENU INTEGRATIONS DITAMBAHKAN DI SINI
     { id: "integrations", label: "Integrations", icon: "extension" },
   ];
 
@@ -89,18 +88,17 @@ export default function Sidebar({ currentView, onNavigate, onLogout }) {
       <div className="p-4 border-t border-[#d3c3be]/40 bg-[#f0ede9]/60">
         <div className="flex items-center justify-between p-2 rounded-lg bg-[#ffffff]/80 border border-[#d3c3be]/30 mb-2 shadow-xs">
           <div className="flex items-center gap-3 min-w-0">
-            <img
-              alt="Profile"
-              className="w-8 h-8 rounded-full object-cover ring-1 ring-[#d3c3be]/50 shrink-0"
-              src={studioProfile.owner.avatar}
-            />
+            {/* Mengambil huruf pertama dari nama untuk dijadikan avatar */}
+            <div className="w-8 h-8 rounded-full bg-[#855230] text-[#ffffff] flex items-center justify-center text-sm font-bold ring-1 ring-[#d3c3be]/50 shrink-0">
+              {studioProfile.owner.name
+                ? studioProfile.owner.name.charAt(0).toUpperCase()
+                : "T"}
+            </div>
             <div className="flex flex-col min-w-0">
               <span className="text-sm text-[#090100] font-medium truncate">
                 {studioProfile.owner.name}
               </span>
-              <span className="text-[11px] text-[#504440] truncate">
-                {studioProfile.owner.title}
-              </span>
+              {/* Tulisan Role dihapus dari sini */}
             </div>
           </div>
         </div>

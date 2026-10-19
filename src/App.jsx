@@ -106,7 +106,6 @@ export default function App() {
   };
 
   const handleAddBooking = async (newBooking) => {
-    // 🔍 1. CEK APAKAH FUNGSI INI BENAR-BENAR TERPANGGIL
     console.log("🔴 [LACAK 1] Modal disubmit! Data form mentah:", newBooking);
 
     try {
@@ -121,7 +120,6 @@ export default function App() {
         `New booking "${newBooking.eventName}" confirmed and scheduled.`,
       );
 
-      // 🔍 2. CEK STATUSNYA APA
       const rawStatus =
         savedBookings.status || newBooking.status || "KOSONG/TIDAK ADA STATUS";
       const currentStatus = rawStatus.toLowerCase();
@@ -325,27 +323,33 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fcf9f4] text-[#1c1c19] flex">
-      {/* Studio Sidebar */}
-      <Sidebar
-        currentView={currentView}
-        onNavigate={navigate}
-        onLogout={() => {
-          setIsAuthenticated(false);
-          navigate("login");
-          showToast("Signed out of Timelens Atelier.");
-        }}
-      />
-
-      {/* Main Studio Console Viewport */}
-      <div className="pl-72 min-h-screen flex flex-col flex-1 bg-[#fcf9f4]">
-        <Header
+    <div className="min-h-screen bg-[#fcf9f4] text-[#1c1c19] flex print:bg-white">
+      {/* Studio Sidebar - DIBUNGKUS PRINT HIDDEN */}
+      <div className="print:hidden">
+        <Sidebar
           currentView={currentView}
           onNavigate={navigate}
-          onOpenNewBooking={() => setIsNewBookingModalOpen(true)}
+          onLogout={() => {
+            setIsAuthenticated(false);
+            navigate("login");
+            showToast("Signed out of Timelens Atelier.");
+          }}
         />
+      </div>
 
-        <main className="relative pt-16 flex-1 w-full px-8 pb-12">
+      {/* Main Studio Console Viewport - DITAMBAHKAN PRINT MODIFIERS */}
+      <div className="pl-72 print:pl-0 min-h-screen flex flex-col flex-1 bg-[#fcf9f4] print:bg-white">
+        {/* Header - DIBUNGKUS PRINT HIDDEN */}
+        <div className="print:hidden">
+          <Header
+            currentView={currentView}
+            onNavigate={navigate}
+            onOpenNewBooking={() => setIsNewBookingModalOpen(true)}
+          />
+        </div>
+
+        {/* Main Content Area - DITAMBAHKAN PRINT MODIFIERS */}
+        <main className="relative pt-16 print:pt-0 flex-1 w-full px-8 print:px-0 pb-12 print:pb-0">
           {currentView === "dashboard" && (
             <DashboardPage
               bookings={bookings}
@@ -367,7 +371,7 @@ export default function App() {
 
           {currentView === "incoming-orders" && (
             <IncomingOrdersPage
-              incomingOrders={bookings} // 🔥 SINKRONISASI KE DATABASE
+              incomingOrders={bookings}
               onUpdateOrderStatus={handleUpdateOrderStatus}
               onNavigate={navigate}
               onSelectBookingFromOrder={handleSelectBookingFromOrder}
@@ -377,7 +381,6 @@ export default function App() {
 
           {currentView === "booking-detail" && (
             <BookingDetailPage
-              /* PERBAIKAN: Menambahkan fallback || {} agar tidak crash saat array kosong */
               booking={selectedBooking || bookings[0] || {}}
               onNavigate={navigate}
               onUpdateBooking={handleUpdateBooking}
@@ -428,7 +431,11 @@ export default function App() {
           )}
 
           {currentView === "invoice-preview" && (
-            <InvoicePreviewPage onNavigate={navigate} onShowToast={showToast} />
+            <InvoicePreviewPage
+              booking={selectedBooking}
+              onNavigate={navigate}
+              onShowToast={showToast}
+            />
           )}
         </main>
       </div>

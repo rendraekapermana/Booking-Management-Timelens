@@ -1,33 +1,37 @@
-import React from 'react';
-import { studioProfile } from '../data/mockData.js';
+import React from "react";
+import { studioProfile } from "../data/mockData.js";
 
 export default function Header({ currentView, onNavigate, onOpenNewBooking }) {
   const getBreadcrumbs = () => {
     switch (currentView) {
-      case 'dashboard':
-        return { section: 'Atelier', title: 'Studio Management' };
-      case 'calendar':
-        return { section: 'Atelier', title: 'Studio Management' };
-      case 'incoming-orders':
-        return { section: 'Atelier', title: 'Studio Management' };
-      case 'booking-detail':
-        return { section: 'Bookings', title: 'BK-2024-089' };
-      case 'booking-forms':
-        return { section: 'Atelier', title: 'Studio Management' };
-      case 'edit-booking-form':
-        return { section: 'Atelier', title: 'Studio Management' };
-      case 'expenses':
-        return { section: 'Atelier', title: 'Studio Management' };
-      case 'add-expense':
-        return { section: 'Expenses', title: 'Add Expenses' };
-      case 'reports':
-        return { section: 'Atelier', title: 'Studio Management', sub: 'Laporan & Analitik' };
-      case 'invoice-settings':
-        return { section: 'Atelier', title: 'Studio Management' };
-      case 'invoice-preview':
-        return { section: 'Paris Atelier', title: 'Salon Saint-Germain' };
+      case "dashboard":
+        return { section: "Atelier", title: "Studio Management" };
+      case "calendar":
+        return { section: "Atelier", title: "Studio Management" };
+      case "incoming-orders":
+        return { section: "Atelier", title: "Studio Management" };
+      case "booking-detail":
+        return { section: "Bookings", title: "BK-2024-089" };
+      case "booking-forms":
+        return { section: "Atelier", title: "Studio Management" };
+      case "edit-booking-form":
+        return { section: "Atelier", title: "Studio Management" };
+      case "expenses":
+        return { section: "Atelier", title: "Studio Management" };
+      case "add-expense":
+        return { section: "Expenses", title: "Add Expenses" };
+      case "reports":
+        return {
+          section: "Atelier",
+          title: "Studio Management",
+          sub: "Laporan & Analitik",
+        };
+      case "invoice-settings":
+        return { section: "Atelier", title: "Studio Management" };
+      case "invoice-preview":
+        return { section: "Paris Atelier", title: "Salon Saint-Germain" };
       default:
-        return { section: 'Atelier', title: 'Studio Management' };
+        return { section: "Atelier", title: "Studio Management" };
     }
   };
 
@@ -63,27 +67,12 @@ export default function Header({ currentView, onNavigate, onOpenNewBooking }) {
         {/* Quick link to public reservation form */}
         <button
           type="button"
-          onClick={() => onNavigate('public-booking')}
+          onClick={() => onNavigate("public-booking")}
           className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#d3c3be]/60 hover:bg-[#ebe8e3] text-xs font-medium text-[#855230] transition-colors"
           title="Open Public Client Reservation Form"
         >
           <span className="material-symbols-outlined text-[15px]">public</span>
           <span>Public Form</span>
-        </button>
-
-        <div className="h-6 w-px bg-[#d3c3be]/60"></div>
-
-        <button
-          type="button"
-          onClick={() => onNavigate('dashboard')}
-          className="cursor-pointer"
-          title="Clara Vance Profile"
-        >
-          <img
-            alt="Profile"
-            className="w-8 h-8 rounded-full object-cover ring-1 ring-[#d3c3be]"
-            src={studioProfile.owner.avatar}
-          />
         </button>
       </div>
     </header>

@@ -1,7 +1,7 @@
-import React from 'react';
-import Card from '../ui/Card.jsx';
-import Input from '../ui/Input.jsx';
-import Textarea from '../ui/Textarea.jsx';
+import React from "react";
+import Card from "../ui/Card.jsx";
+import Input from "../ui/Input.jsx";
+import Textarea from "../ui/Textarea.jsx";
 
 export default function ReceiptTemplateTab({ settings, onChange }) {
   const updateSetting = (key, val) => {
@@ -18,33 +18,33 @@ export default function ReceiptTemplateTab({ settings, onChange }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
           <Input
             label="Judul Dokumen Kwitansi"
-            value={settings.receiptTitle}
-            onChange={(e) => updateSetting('receiptTitle', e.target.value)}
+            value={settings?.receiptTitle || ""}
+            onChange={(e) => updateSetting("receiptTitle", e.target.value)}
           />
           <Input
             label="Prefix Penomoran Kwitansi"
-            value={settings.receiptPrefix}
-            onChange={(e) => updateSetting('receiptPrefix', e.target.value)}
+            value={settings?.receiptPrefix || ""}
+            onChange={(e) => updateSetting("receiptPrefix", e.target.value)}
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
           <Input
             label="Label 'Telah Diterima Dari'"
-            value={settings.receiptPayerLabel}
-            onChange={(e) => updateSetting('receiptPayerLabel', e.target.value)}
+            value={settings?.receiptPayerLabel || ""}
+            onChange={(e) => updateSetting("receiptPayerLabel", e.target.value)}
           />
           <Input
             label="Label 'Sejumlah Uang'"
-            value={settings.receiptWordsLabel}
-            onChange={(e) => updateSetting('receiptWordsLabel', e.target.value)}
+            value={settings?.receiptWordsLabel || ""}
+            onChange={(e) => updateSetting("receiptWordsLabel", e.target.value)}
           />
         </div>
 
         <Input
           label="Deskripsi Default Peruntukan Pembayaran"
-          value={settings.receiptDefaultDesc}
-          onChange={(e) => updateSetting('receiptDefaultDesc', e.target.value)}
+          value={settings?.receiptDefaultDesc || ""}
+          onChange={(e) => updateSetting("receiptDefaultDesc", e.target.value)}
         />
       </Card>
 
@@ -60,14 +60,17 @@ export default function ReceiptTemplateTab({ settings, onChange }) {
                 Tampilkan Cap Stempel Resmi Timelens
               </span>
               <p className="text-[11px] text-[#504440] mt-0.5">
-                Mencetak stempel oval bergradasi bronze bertuliskan "LUNAS / VERIFIED" di atas tanda tangan.
+                Mencetak stempel oval bergradasi bronze bertuliskan "LUNAS /
+                VERIFIED" di atas tanda tangan.
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={settings.includeStamp}
-                onChange={(e) => updateSetting('includeStamp', e.target.checked)}
+                checked={Boolean(settings?.includeStamp)}
+                onChange={(e) =>
+                  updateSetting("includeStamp", e.target.checked)
+                }
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-[#d3c3be] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#855230]"></div>
@@ -76,8 +79,8 @@ export default function ReceiptTemplateTab({ settings, onChange }) {
 
           <Input
             label="Teks Cap Stempel Atelier"
-            value={settings.stampText}
-            onChange={(e) => updateSetting('stampText', e.target.value)}
+            value={settings?.stampText || ""}
+            onChange={(e) => updateSetting("stampText", e.target.value)}
           />
         </div>
       </Card>
@@ -90,8 +93,8 @@ export default function ReceiptTemplateTab({ settings, onChange }) {
         <Textarea
           label="Klausul Penyerahan Kwitansi"
           rows={4}
-          value={settings.handoverClauses}
-          onChange={(e) => updateSetting('handoverClauses', e.target.value)}
+          value={settings?.handoverClauses || ""}
+          onChange={(e) => updateSetting("handoverClauses", e.target.value)}
         />
       </Card>
     </div>
