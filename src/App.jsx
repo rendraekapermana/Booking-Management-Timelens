@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { bookingService, fetchBookings } from "./services/bookingService";
+import { supabase } from "./lib/supabase.js"; // Pastikan import supabase
 import Sidebar from "./components/Sidebar.jsx";
 import Header from "./components/Header.jsx";
 import NewBookingModal from "./components/NewBookingModal.jsx";
@@ -24,20 +25,70 @@ import { syncBookingToGoogleCalendar } from "./services/calendarSync.js";
 import { initialIncomingOrders, initialExpenses } from "./lib/mock/mockData.js";
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [currentView, setCurrentView] = useState("dashboard");
+  // --- STATE OTENTIKASI & USER ---
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null); // Menyimpan data user yang login
+
+  const [currentView, setCurrentView] = useState("login");
   const [bookings, setBookings] = useState([]);
   const [incomingOrders, setIncomingOrders] = useState([]);
-  useEffect(() => {
-    setIncomingOrders(bookings);
-  }, [bookings]);
   const [expenses, setExpenses] = useState(initialExpenses);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [expenseToEdit, setExpenseToEdit] = useState(null);
   const [isNewBookingModalOpen, setIsNewBookingModalOpen] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Sync hash routing if present & Load Supabase Data
+  useEffect(() => {
+    setIncomingOrders(bookings);
+  }, [bookings]);
+
+  // --- CEK SESI SUPABASE ---
+  useEffect(() => {
+    // 1. Cek sesi saat aplikasi pertama kali dimuat
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsAuthenticated(true);
+        setCurrentUser({
+          name:
+            session.user.user_metadata?.full_name ||
+            session.user.email.split("@")[0],
+          email: session.user.email,
+        });
+        // Jika sedang di halaman login, arahkan ke dashboard
+        if (
+          window.location.hash.replace("#", "") === "login" ||
+          !window.location.hash
+        ) {
+          setCurrentView("dashboard");
+        }
+      }
+    });
+
+    // 2. Pantau perubahan status login/logout (Realtime)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setIsAuthenticated(true);
+        setCurrentUser({
+          name:
+            session.user.user_metadata?.full_name ||
+            session.user.email.split("@")[0],
+          email: session.user.email,
+        });
+      } else {
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+        if (currentView !== "public-booking") {
+          setCurrentView("login");
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // --- LOAD DATA BOKING & ROUTING ---
   useEffect(() => {
     const loadData = async () => {
       const data = await fetchBookings();
@@ -45,7 +96,6 @@ export default function App() {
         setBookings(data);
       }
     };
-
     loadData();
 
     const handleHashChange = () => {
@@ -82,7 +132,6 @@ export default function App() {
 
   const navigate = (viewId, param = null) => {
     setCurrentView(viewId);
-
     if (param) {
       if (typeof param === "object") {
         setSelectedBooking(param);
@@ -93,7 +142,6 @@ export default function App() {
         if (found) setSelectedBooking(found);
       }
     }
-
     window.location.hash = viewId;
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -106,16 +154,11 @@ export default function App() {
   };
 
   const handleAddBooking = async (newBooking) => {
-    console.log("🔴 [LACAK 1] Modal disubmit! Data form mentah:", newBooking);
-
     try {
       const savedBookings = await bookingService.create(newBooking);
-      console.log("🔴 [LACAK 2] Berhasil disave ke DB:", savedBookings);
-
       setBookings([savedBookings, ...bookings]);
       setSelectedBooking(savedBookings);
       setIsNewBookingModalOpen(false);
-
       showToast(
         `New booking "${newBooking.eventName}" confirmed and scheduled.`,
       );
@@ -123,49 +166,19 @@ export default function App() {
       const rawStatus =
         savedBookings.status || newBooking.status || "KOSONG/TIDAK ADA STATUS";
       const currentStatus = rawStatus.toLowerCase();
-      console.log("🔴 [LACAK 3] Status pesanan terbaca sebagai:", rawStatus);
 
       if (currentStatus === "confirmed" || currentStatus === "fully paid") {
-        console.log(
-          "🔴 [LACAK 4] Status lolos pengecekan! Menyiapkan kalender...",
-        );
-
         const savedAccounts = JSON.parse(
           localStorage.getItem("googleAccounts") || "[]",
         );
-        console.log(
-          "🔴 [LACAK 5] Akun Google ditemukan di memori:",
-          savedAccounts.length,
-        );
-
         if (savedAccounts.length > 0) {
           savedAccounts.forEach(async (acc) => {
-            console.log(
-              `🔴 [LACAK 6] Mencoba kirim ke email: ${acc.email}. Token ada: ${!!acc.accessToken}`,
-            );
-
-            // Panggil API Kalender
-            const success = await syncBookingToGoogleCalendar(
-              savedBookings,
-              acc.accessToken,
-            );
-            console.log(
-              `🔴 [LACAK 7] Hasil akhir kalender untuk ${acc.email}:`,
-              success,
-            );
+            await syncBookingToGoogleCalendar(savedBookings, acc.accessToken);
           });
-        } else {
-          console.error(
-            "🔴 [ERROR] Pemicu batal: Akun Google tidak ditemukan di local storage!",
-          );
         }
-      } else {
-        console.warn(
-          `🔴 [GAGAL TRIGGER] Kalender dilewati karena statusnya '${rawStatus}', bukan Confirmed/Fully Paid.`,
-        );
       }
     } catch (error) {
-      console.error("🔴 [ERROR FATAL] Gagal menyimpan booking:", error);
+      console.error("Gagal menyimpan booking:", error);
       showToast("Gagal menyimpan booking ke database.", "error");
     }
   };
@@ -179,22 +192,13 @@ export default function App() {
     const updatedOrders = incomingOrders.map((o) => {
       if (o.id === orderId) {
         const updated = { ...o, status: newStatus };
-
-        // 🚀 PEMICU GOOGLE CALENDAR DARI DROPDOWN
         if (newStatus === "Confirmed" || newStatus === "Fully Paid") {
           const savedAccounts = JSON.parse(
             localStorage.getItem("googleAccounts") || "[]",
           );
-
           if (savedAccounts.length > 0) {
             savedAccounts.forEach(async (acc) => {
-              const success = await syncBookingToGoogleCalendar(
-                updated,
-                acc.accessToken,
-              );
-              if (success) {
-                console.log(`✅ Event sukses disinkronkan ke: ${acc.email}`);
-              }
+              await syncBookingToGoogleCalendar(updated, acc.accessToken);
             });
             showToast(
               `Status: ${newStatus}. Jadwal masuk ke Google Calendar!`,
@@ -212,12 +216,10 @@ export default function App() {
             "success",
           );
         }
-
         return updated;
       }
       return o;
     });
-
     setIncomingOrders(updatedOrders);
   };
 
@@ -252,7 +254,6 @@ export default function App() {
       opsCount: 2,
       orderRef: `#TL-${Math.floor(8800 + Math.random() * 100)}`,
     };
-
     setBookings([newBooking, ...bookings]);
     setSelectedBooking(newBooking);
     navigate("booking-detail");
@@ -280,7 +281,7 @@ export default function App() {
     );
   };
 
-  // If user navigated to Public Booking page (standalone client intake without studio sidebar)
+  // 1. PUBLIC FORM DIPERBOLEHKAN (TIDAK TERKUNCI)
   if (currentView === "public-booking") {
     return (
       <>
@@ -300,15 +301,18 @@ export default function App() {
     );
   }
 
-  // If unauthenticated or viewing Login page
+  // 2. KUNCI SELURUH HALAMAN LAIN JIKA BELUM LOGIN (Proteksi Rute)
   if (!isAuthenticated || currentView === "login") {
     return (
       <>
         <LoginPage
-          onLoginSuccess={() => {
+          onLoginSuccess={(userData) => {
             setIsAuthenticated(true);
+            setCurrentUser(userData);
             navigate("dashboard");
-            showToast("Welcome back, Clara Vance. Atelier briefing loaded.");
+            showToast(
+              `Welcome back, ${userData.name}. Atelier briefing loaded.`,
+            );
           }}
         />
         {toast && (
@@ -322,24 +326,25 @@ export default function App() {
     );
   }
 
+  // 3. MAIN DASHBOARD (HANYA BISA DIAKSES JIKA SUDAH LOGIN)
   return (
     <div className="min-h-screen bg-[#fcf9f4] text-[#1c1c19] flex print:bg-white">
-      {/* Studio Sidebar - DIBUNGKUS PRINT HIDDEN */}
       <div className="print:hidden">
         <Sidebar
           currentView={currentView}
           onNavigate={navigate}
-          onLogout={() => {
+          user={currentUser} // Lempar data user ke Sidebar
+          onLogout={async () => {
+            await supabase.auth.signOut(); // Sign out dari Supabase
             setIsAuthenticated(false);
+            setCurrentUser(null);
             navigate("login");
             showToast("Signed out of Timelens Atelier.");
           }}
         />
       </div>
 
-      {/* Main Studio Console Viewport - DITAMBAHKAN PRINT MODIFIERS */}
       <div className="pl-72 print:pl-0 min-h-screen flex flex-col flex-1 bg-[#fcf9f4] print:bg-white">
-        {/* Header - DIBUNGKUS PRINT HIDDEN */}
         <div className="print:hidden">
           <Header
             currentView={currentView}
@@ -348,12 +353,11 @@ export default function App() {
           />
         </div>
 
-        {/* Main Content Area - DITAMBAHKAN PRINT MODIFIERS */}
         <main className="relative pt-16 print:pt-0 flex-1 w-full px-8 print:px-0 pb-12 print:pb-0">
           {currentView === "dashboard" && (
             <DashboardPage
               bookings={bookings}
-              incomingOrders={bookings}
+              incomingOrders={incomingOrders}
               onNavigate={navigate}
               onSelectBooking={(b) => setSelectedBooking(b)}
               onSelectOrder={() => navigate("incoming-orders")}
@@ -371,7 +375,7 @@ export default function App() {
 
           {currentView === "incoming-orders" && (
             <IncomingOrdersPage
-              incomingOrders={bookings}
+              incomingOrders={incomingOrders}
               onUpdateOrderStatus={handleUpdateOrderStatus}
               onNavigate={navigate}
               onSelectBookingFromOrder={handleSelectBookingFromOrder}
@@ -440,21 +444,21 @@ export default function App() {
         </main>
       </div>
 
-      {/* Global New Booking Modal */}
       <NewBookingModal
         isOpen={isNewBookingModalOpen}
         onClose={() => setIsNewBookingModalOpen(false)}
         onAddBooking={handleAddBooking}
       />
 
-      {/* Toast Notification Container */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      <div className="print:hidden">
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
+      </div>
     </div>
   );
 }

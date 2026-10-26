@@ -1,7 +1,7 @@
 import React from "react";
-import { studioProfile } from "../data/mockData.js";
+import { studioProfile } from "../lib/mock/mockData.js"; // Pastikan path ini benar
 
-export default function Sidebar({ currentView, onNavigate, onLogout }) {
+export default function Sidebar({ currentView, onNavigate, onLogout, user }) {
   const mainNav = [
     { id: "dashboard", label: "Dashboard", icon: "dashboard" },
     { id: "calendar", label: "Calendar", icon: "calendar_today" },
@@ -57,10 +57,14 @@ export default function Sidebar({ currentView, onNavigate, onLogout }) {
     </div>
   );
 
+  // Ambil nama dari user yang login (jika ada), jika tidak gunakan default
+  const userName = user?.name || "Studio User";
+  // Ambil huruf pertama untuk avatar
+  const userInitial = userName.charAt(0).toUpperCase();
+
   return (
     <aside className="fixed left-0 top-0 h-full w-72 bg-[#f6f3ee] border-r border-[#d3c3be]/60 z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.03)] select-none">
       <div className="flex flex-col flex-1 overflow-y-auto px-6 pt-6 pb-4">
-        {/* Logo lockup matching reference */}
         <div className="flex items-center gap-3 pb-6 border-b border-[#d3c3be]/40">
           <button
             type="button"
@@ -75,7 +79,6 @@ export default function Sidebar({ currentView, onNavigate, onLogout }) {
           </button>
         </div>
 
-        {/* Navigation Groups */}
         <nav className="flex-1 flex flex-col gap-6 pt-6">
           {renderNavGroup("MAIN", mainNav)}
           {renderNavGroup("BOOKING", bookingNav)}
@@ -84,21 +87,17 @@ export default function Sidebar({ currentView, onNavigate, onLogout }) {
         </nav>
       </div>
 
-      {/* User profile footer */}
       <div className="p-4 border-t border-[#d3c3be]/40 bg-[#f0ede9]/60">
         <div className="flex items-center justify-between p-2 rounded-lg bg-[#ffffff]/80 border border-[#d3c3be]/30 mb-2 shadow-xs">
           <div className="flex items-center gap-3 min-w-0">
-            {/* Mengambil huruf pertama dari nama untuk dijadikan avatar */}
+            {/* Tampilkan Inisial User Dinamis */}
             <div className="w-8 h-8 rounded-full bg-[#855230] text-[#ffffff] flex items-center justify-center text-sm font-bold ring-1 ring-[#d3c3be]/50 shrink-0">
-              {studioProfile.owner.name
-                ? studioProfile.owner.name.charAt(0).toUpperCase()
-                : "T"}
+              {userInitial}
             </div>
             <div className="flex flex-col min-w-0">
               <span className="text-sm text-[#090100] font-medium truncate">
-                {studioProfile.owner.name}
+                {userName}
               </span>
-              {/* Tulisan Role dihapus dari sini */}
             </div>
           </div>
         </div>

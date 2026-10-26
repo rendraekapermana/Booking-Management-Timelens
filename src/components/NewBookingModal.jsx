@@ -118,7 +118,7 @@ export default function NewBookingModal({ isOpen, onClose, onAddBooking }) {
                 <input
                   required
                   type="text"
-                  placeholder="e.g. Clara Vance"
+                  placeholder="e.g. Natasya Mareta"
                   value={formData.clientName}
                   onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
                   className="w-full px-3 py-2 text-sm bg-[#f6f3ee] border border-[#d3c3be]/40 rounded-lg text-[#090100] focus:outline-none focus:border-[#2c1810]"
@@ -140,7 +140,7 @@ export default function NewBookingModal({ isOpen, onClose, onAddBooking }) {
                 <input
                   required
                   type="tel"
-                  placeholder="+62 812-3456-7890"
+                  placeholder="08123456789"
                   value={formData.clientPhone}
                   onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
                   className="w-full px-3 py-2 text-sm bg-[#f6f3ee] border border-[#d3c3be]/40 rounded-lg text-[#090100] focus:outline-none focus:border-[#2c1810]"

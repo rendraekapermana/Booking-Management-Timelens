@@ -109,9 +109,6 @@ export default function DashboardPage({
               <h2 className="text-xl text-[#090100] font-serif font-semibold">
                 Upcoming Events
               </h2>
-              <span className="text-[11px] text-[#504440] uppercase tracking-widest font-medium">
-                Next Engagements (Terdekat)
-              </span>
             </div>
             <button
               type="button"
