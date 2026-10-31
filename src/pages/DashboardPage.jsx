@@ -56,9 +56,6 @@ export default function DashboardPage({
           <span className="text-[11px] uppercase tracking-[0.25em] text-[#855230] font-semibold">
             Operational Briefing
           </span>
-          <h1 className="text-3xl lg:text-4xl text-[#090100] tracking-tight font-serif font-bold">
-            Today at the Atelier
-          </h1>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-[#504440] font-medium bg-[#f6f3ee] px-3.5 py-1.5 rounded-lg border border-[#d3c3be]/40">

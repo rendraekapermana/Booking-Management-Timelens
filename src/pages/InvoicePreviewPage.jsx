@@ -44,7 +44,7 @@ export default function InvoicePreviewPage({
   }
 
   // variabel dinamis berdasarkan pengaturan
-  const studioName = settings?.studioName || "Timelens Photobooth Atelier";
+  const studioName = settings?.studioName || "Timelens Photobooth";
   const studioAddress =
     settings?.studioAddress ||
     "Jl. Wijaya II No. 42, Kebayoran Baru, Jakarta Selatan 12160";
@@ -83,7 +83,7 @@ export default function InvoicePreviewPage({
 
   const handleDownloadPDF = () => {
     window.print();
-    if (onShowToast) onShowToast("Mencetak dokumen resmi atelier ke PDF...");
+    if (onShowToast) onShowToast("Mencetak dokumen resmi ke PDF...");
   };
 
   const handleSendWhatsapp = () => {

@@ -38,7 +38,7 @@ export default function LoginForm({
 
         const userName = profileData?.fullname || email.split("@")[0];
 
-        setSuccessMessage("Berhasil masuk! Memuat atelier...");
+        setSuccessMessage("Berhasil masuk!");
         setTimeout(() => {
           onLoginSuccess({
             name: userName,
@@ -103,7 +103,7 @@ export default function LoginForm({
         disabled={loading}
         className="w-full mt-2 py-3.5 bg-[#2c1810] text-[#fcf9f4] font-medium rounded-lg hover:bg-[#090100] transition-colors flex items-center justify-center gap-2 tracking-wide cursor-pointer shadow-sm text-sm disabled:opacity-50"
       >
-        <span>{loading ? "Processing..." : "Sign In to Atelier"}</span>
+        <span>{loading ? "Processing..." : "Sign In"}</span>
         <span className="material-symbols-outlined text-[18px]">
           arrow_forward
         </span>

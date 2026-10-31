@@ -10,8 +10,6 @@ import DashboardPage from "./pages/DashboardPage.jsx";
 import CalendarPage from "./pages/CalendarPage.jsx";
 import IncomingOrdersPage from "./pages/IncomingOrdersPage.jsx";
 import BookingDetailPage from "./pages/BookingDetailPage.jsx";
-import BookingFormsPage from "./pages/BookingFormsPage.jsx";
-import CreateEditBookingFormPage from "./pages/CreateEditBookingFormPage.jsx";
 import ExpensesPage from "./pages/ExpensesPage.jsx";
 import AddExpensePage from "./pages/AddExpensePage.jsx";
 import ReportsPage from "./pages/ReportsPage.jsx";
@@ -104,6 +102,13 @@ export default function App() {
         setCurrentView("public-booking");
       } else if (hash === "login") {
         setCurrentView("login");
+      } else if (hash === "booking-forms" || hash === "edit-booking-form") {
+        setCurrentView("dashboard");
+        window.history.replaceState(
+          null,
+          "",
+          `${window.location.pathname}${window.location.search}#dashboard`,
+        );
       } else if (
         hash &&
         [
@@ -111,8 +116,6 @@ export default function App() {
           "calendar",
           "incoming-orders",
           "booking-detail",
-          "booking-forms",
-          "edit-booking-form",
           "expenses",
           "add-expense",
           "reports",
@@ -311,7 +314,7 @@ export default function App() {
             setCurrentUser(userData);
             navigate("dashboard");
             showToast(
-              `Welcome back, ${userData.name}. Atelier briefing loaded.`,
+              `Welcome back, ${userData.name}.`,
             );
           }}
         />
@@ -388,17 +391,6 @@ export default function App() {
               booking={selectedBooking || bookings[0] || {}}
               onNavigate={navigate}
               onUpdateBooking={handleUpdateBooking}
-              onShowToast={showToast}
-            />
-          )}
-
-          {currentView === "booking-forms" && (
-            <BookingFormsPage onNavigate={navigate} onShowToast={showToast} />
-          )}
-
-          {currentView === "edit-booking-form" && (
-            <CreateEditBookingFormPage
-              onNavigate={navigate}
               onShowToast={showToast}
             />
           )}

@@ -99,10 +99,6 @@ export default function CalendarPage({
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="inline-block w-2 h-2 rounded-full bg-[#855230]"></span>
-              <span className="text-[11px] uppercase tracking-widest text-[#855230] font-semibold">
-                Atelier Schedule Matrix
-              </span>
             </div>
             <h1 className="text-4xl lg:text-5xl text-[#090100] tracking-tight font-serif font-bold">
               {currentMonthYearHeader}

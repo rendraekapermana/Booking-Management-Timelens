@@ -202,7 +202,7 @@ export default function PublicBookingPage({
             <button
               onClick={() => {
                 const waNumber = "6281234567890";
-                const message = `Halo Timelens Atelier, saya ${formData.clientName} baru saja melakukan reservasi photobooth via website dengan Nomor Referensi: *${orderRefNumber}*. Mohon verifikasi pemesanan saya. Terima kasih!`;
+                const message = `Halo Timelens, saya ${formData.clientName} baru saja melakukan reservasi photobooth via website dengan Nomor Referensi: *${orderRefNumber}*. Mohon verifikasi pemesanan saya. Terima kasih!`;
                 window.open(
                   `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`,
                   "_blank",
@@ -226,7 +226,7 @@ export default function PublicBookingPage({
 
       <footer className="w-full bg-[#f6f3ee] border-t py-8 mt-auto text-center">
         <p className="text-xs text-[#504440]">
-          © {new Date().getFullYear()} Timelens Vintage Photobooth Atelier.
+          © {new Date().getFullYear()} Timelens Vintage Photobooth.
         </p>
       </footer>
     </div>

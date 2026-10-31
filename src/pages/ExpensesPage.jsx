@@ -125,12 +125,7 @@ export default function ExpensesPage({
       {/* Top Header */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-2 h-2 rounded-full bg-[#855230] animate-pulse"></span>
-            <span className="text-[11px] text-[#855230] font-mono tracking-widest font-semibold uppercase">
-              Live Database
-            </span>
-          </div>
+          <div className="flex items-center gap-2 mb-2"></div>
           <h1 className="text-3xl lg:text-4xl text-[#090100] tracking-tight font-serif font-bold">
             General Expenses
           </h1>

@@ -21,9 +21,6 @@ export default function LoginPage({ onLoginSuccess }) {
                 className="h-8 w-auto object-contain"
               />
             </div>
-            <h1 className="text-2xl font-serif text-[#2c1810] font-bold tracking-tight">
-              {isRegister ? "Create Your Account" : "Sign In to Atelier"}
-            </h1>
             <p className="text-xs text-[#504440] mt-2">
               {isRegister
                 ? "Sign up to manage your studio events and bookings"
@@ -83,7 +80,7 @@ export default function LoginPage({ onLoginSuccess }) {
         {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-xs text-[#504440] tracking-wider">
-            © 2026 Timelens Photobooth Atelier · All rights reserved
+            © 2026 Timelens Photobooth · All rights reserved
           </p>
         </div>
       </div>

@@ -103,13 +103,6 @@ export default function IncomingOrdersPage({ onNavigate, onShowToast }) {
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-2">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-[#855230] uppercase tracking-[0.25em] font-semibold">
-              Atelier Pipeline
-            </span>
-            <span className="w-1.5 h-1.5 rounded-full bg-[#855230]"></span>
-            <span className="text-[11px] text-[#504440] font-mono">
-              LIVE SYNC
-            </span>
           </div>
           <div className="flex items-baseline gap-3">
             <h1 className="text-3xl lg:text-4xl text-[#090100] tracking-tight font-serif font-bold">

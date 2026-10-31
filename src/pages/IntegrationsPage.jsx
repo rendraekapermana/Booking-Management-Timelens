@@ -85,12 +85,7 @@ export default function IntegrationsPage({ onShowToast }) {
     <div className="flex flex-col gap-8 max-w-4xl mx-auto w-full">
       {/* Header Halaman */}
       <div className="flex flex-col gap-2 pt-2">
-        <div className="flex items-center gap-2">
-          <span className="inline-block w-2 h-2 rounded-full bg-[#855230]"></span>
-          <span className="text-[11px] uppercase tracking-widest text-[#855230] font-semibold">
-            System Settings
-          </span>
-        </div>
+        <div className="flex items-center gap-2"></div>
         <h1 className="text-3xl lg:text-4xl text-[#090100] tracking-tight font-serif font-bold">
           Integrations &amp; Automation
         </h1>
@@ -106,7 +101,7 @@ export default function IntegrationsPage({ onShowToast }) {
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-xl bg-[#f6f3ee] flex items-center justify-center text-[#855230] shrink-0 border border-[#d3c3be]/30">
               <span className="material-symbols-outlined text-[24px]">
-                event_sync
+                calendar_month
               </span>
             </div>
             <div className="flex flex-col">

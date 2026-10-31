@@ -97,11 +97,10 @@ export default function InvoiceSettingsPage({ onNavigate, onShowToast }) {
   }
 
   return (
-    <div className="relative w-full max-w-7xl mx-auto space-y-8 pb-20">
+    <div className="relative w-full max-w-7xl mx-auto space-y-8 pb-20 pt-4">
       <PageHeader
-        eyebrow="Konfigurasi Studio & Penagihan"
         title="Pengaturan Invoice & Penagihan"
-        description="Kelola identitas atelier, format penomoran faktur & kwitansi, rekening pembayaran, klausul syarat & ketentuan, serta template notifikasi pesan WhatsApp."
+        description="Kelola identitas, format penomoran faktur & kwitansi, rekening pembayaran, klausul syarat & ketentuan, serta template notifikasi pesan WhatsApp."
         actions={
           <Button
             variant="secondary"
@@ -202,7 +201,7 @@ export default function InvoiceSettingsPage({ onNavigate, onShowToast }) {
             info
           </span>
           <span>
-            Perubahan berlaku otomatis pada generasi dokumen baru atelier.
+            Perubahan berlaku otomatis pada generasi dokumen baru.
           </span>
         </div>
         <div className="flex items-center gap-3">

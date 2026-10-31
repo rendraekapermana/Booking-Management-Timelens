@@ -178,14 +178,6 @@ export default function ReportsPage({ onShowToast }) {
       <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-5 pb-5 border-b border-[#e6e0d6]">
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#855230]/10 border border-[#855230]/20 text-[#855230] text-[11px] font-semibold tracking-wider uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#855230] animate-pulse"></span>
-              TIMELENS ARCHIVE
-            </span>
-            <span className="text-xs text-[#827470] font-mono">/</span>
-            <span className="font-mono text-xs text-[#504440] uppercase tracking-wider">
-              Laporan Eksekutif
-            </span>
           </div>
           <h1 className="text-3xl lg:text-4xl text-[#090100] tracking-tight font-serif font-bold mt-1">
             Financial &amp; Event Reports
@@ -376,7 +368,7 @@ export default function ReportsPage({ onShowToast }) {
                     </span>
                   </div>
                   <span className="text-xs text-[#504440] mt-0.5">
-                    Komposisi penyelesaian pesanan atelier
+                    Komposisi penyelesaian pesanan
                   </span>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-[#504440] bg-[#ffffff] px-3.5 py-2 rounded-xl border border-[#d3c3be]/40 shadow-xs">

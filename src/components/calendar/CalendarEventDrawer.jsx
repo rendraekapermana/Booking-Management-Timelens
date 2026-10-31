@@ -162,7 +162,7 @@ export default function CalendarEventDrawer({
             onNavigate("booking-detail");
           }}
         >
-          View Full Booking Dossier
+          View Full Booking
         </Button>
       </div>
     </aside>

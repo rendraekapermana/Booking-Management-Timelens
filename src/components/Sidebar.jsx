@@ -9,7 +9,6 @@ export default function Sidebar({ currentView, onNavigate, onLogout, user }) {
 
   const bookingNav = [
     { id: "incoming-orders", label: "Incoming Orders", icon: "inbox" },
-    { id: "booking-forms", label: "Booking Forms", icon: "assignment" },
   ];
 
   const businessNav = [
@@ -31,8 +30,6 @@ export default function Sidebar({ currentView, onNavigate, onLogout, user }) {
         const isActive =
           currentView === item.id ||
           (item.id === "incoming-orders" && currentView === "booking-detail") ||
-          (item.id === "booking-forms" &&
-            currentView === "edit-booking-form") ||
           (item.id === "expenses" && currentView === "add-expense") ||
           (item.id === "invoice-settings" && currentView === "invoice-preview");
 
