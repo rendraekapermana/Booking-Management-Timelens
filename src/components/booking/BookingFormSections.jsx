@@ -420,7 +420,7 @@ export const OrderSummary = ({
     <div className="flex flex-col gap-1.5 mt-2">
       <div className="flex justify-between items-baseline">
         <span className="text-base font-serif font-bold">
-          Total Biaya Atelier
+          Total Biaya
         </span>
         <span className="text-2xl font-serif font-bold text-[#855230]">
           {formatIDR(grandTotal)}

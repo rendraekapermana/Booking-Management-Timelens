@@ -49,7 +49,7 @@ export default function WhatsAppGatewayTab({
                 </span>
               </div>
               <p className="text-[11px] text-[#504440] mt-0.5 font-mono">
-                Nomor Resmi Studio: +62 811-920-8800 (Timelens Atelier Concierge)
+                Nomor Resmi Studio: +62 811-920-8800 (Timelens Concierge)
               </p>
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function WhatsAppGatewayTab({
 
             <div className="mt-4 pt-3 border-t border-[#f1ece4] flex items-center justify-between text-[11px] text-[#504440]">
               <span>Karakter: {currentText.length}</span>
-              <span className="text-[#855230] font-semibold">Terkurasi Standar Atelier</span>
+              <span className="text-[#855230] font-semibold">Terkurasi Standar</span>
             </div>
           </div>
         </div>

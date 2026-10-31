@@ -63,7 +63,7 @@ export default function MonthlyRevenueChart({ bookings = [], expenses = [] }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-base text-[#090100] font-serif font-bold">
-            Tren Finansial Bulanan Atelier
+            Tren Finansial Bulanan
           </h3>
           <span className="text-xs text-[#504440] mt-0.5">
             Komparasi tren omzet kotor, beban operasional, dan laba bersih per

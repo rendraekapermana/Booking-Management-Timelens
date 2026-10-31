@@ -89,7 +89,7 @@ export default function NewBookingModal({ isOpen, onClose, onAddBooking }) {
         <div className="p-6 sm:p-8 pb-4 flex items-start justify-between border-b border-[#f0ede9]">
           <div>
             <span className="text-[11px] text-[#855230] uppercase tracking-widest font-semibold block mb-1">
-              Atelier Schedule & Reservation
+              Schedule & Reservation
             </span>
             <h2 className="text-2xl font-serif text-[#090100] font-semibold">
               Create New Booking
@@ -129,7 +129,7 @@ export default function NewBookingModal({ isOpen, onClose, onAddBooking }) {
                 <input
                   required
                   type="email"
-                  placeholder="client@atelier.com"
+                  placeholder="client@mail.com"
                   value={formData.clientEmail}
                   onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
                   className="w-full px-3 py-2 text-sm bg-[#f6f3ee] border border-[#d3c3be]/40 rounded-lg text-[#090100] focus:outline-none focus:border-[#2c1810]"

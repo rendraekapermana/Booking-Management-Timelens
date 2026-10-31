@@ -99,7 +99,7 @@ export default function RegisterForm({
           required
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          placeholder="curator@timelensatelier.com"
+          placeholder="curator@timelens.com"
           className="w-full px-4 py-3 bg-[#f6f3ee] border border-[#d3c3be]/40 rounded-lg text-sm text-[#2c1810] focus:outline-none focus:border-[#2c1810] transition-colors"
         />
       </div>

@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { supabase } from "../lib/supabase.js";
 
+// PERHATIKAN: Ada tambahan prop 'onForgotPassword'
 export default function LoginForm({
   onLoginSuccess,
   setErrorMessage,
   setSuccessMessage,
+  onForgotPassword,
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -67,15 +69,25 @@ export default function LoginForm({
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="curator@timelensatelier.com"
+          placeholder="curator@timelens.com"
           className="w-full px-4 py-3 bg-[#f6f3ee] border border-[#d3c3be]/40 rounded-lg text-sm text-[#2c1810] focus:outline-none focus:border-[#2c1810] transition-colors"
         />
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-[11px] font-semibold uppercase tracking-wider text-[#504440]">
-          Password
-        </label>
+        {/* BARIS INI DITAMBAHKAN TOMBOL FORGOT PASSWORD */}
+        <div className="flex justify-between items-end">
+          <label className="text-[11px] font-semibold uppercase tracking-wider text-[#504440]">
+            Password
+          </label>
+          <button
+            type="button"
+            onClick={onForgotPassword}
+            className="text-[11px] font-semibold text-[#855230] hover:text-[#2c1810] hover:underline cursor-pointer transition-colors"
+          >
+            Forgot Password?
+          </button>
+        </div>
         <div className="relative flex items-center">
           <input
             type={showPassword ? "text" : "password"}
@@ -83,7 +95,6 @@ export default function LoginForm({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            /* Tambahan [&::-ms-reveal]:hidden untuk menghilangkan ikon mata ganda bawaan browser */
             className="w-full px-4 py-3 pr-11 bg-[#f6f3ee] border border-[#d3c3be]/40 rounded-lg text-sm text-[#2c1810] focus:outline-none focus:border-[#2c1810] transition-colors [&::-ms-reveal]:hidden [&::-webkit-contacts-auto-fill-button]:hidden"
           />
           <button

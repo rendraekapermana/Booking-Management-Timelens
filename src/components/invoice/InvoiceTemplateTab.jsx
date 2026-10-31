@@ -13,7 +13,7 @@ export default function InvoiceTemplateTab({ settings, onChange }) {
     <div className="space-y-8">
       {/* SECTION 1: Identitas Atelier & Letterhead */}
       <Card
-        title="1. Identitas Atelier & Kop Surat"
+        title="1. Identitas & Kop Surat"
         subtitle="Informasi legalitas dan kontak yang tercetak pada letterhead faktur resmi."
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

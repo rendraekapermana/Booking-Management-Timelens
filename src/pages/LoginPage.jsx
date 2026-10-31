@@ -2,11 +2,36 @@ import React, { useState } from "react";
 import { studioProfile } from "../lib/mock/mockData.js";
 import LoginForm from "../components/LoginForm.jsx";
 import RegisterForm from "../components/RegisterForm.jsx";
+import ForgotPasswordForm from "../components/ForgotPasswordForm.jsx"; // Import komponen baru
 
 export default function LoginPage({ onLoginSuccess }) {
-  const [isRegister, setIsRegister] = useState(false);
+  // authView bisa bernilai: 'login', 'register', atau 'forgot'
+  const [authView, setAuthView] = useState("login");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  // Fungsi dinamis untuk teks judul berdasarkan view
+  const getHeaderTexts = () => {
+    switch (authView) {
+      case "register":
+        return {
+          title: "Create Your Account",
+          sub: "Sign up to manage your studio events and bookings",
+        };
+      case "forgot":
+        return {
+          title: "Reset Password",
+          sub: "Enter your email to receive a password reset link",
+        };
+      default:
+        return {
+          title: "Sign In",
+          sub: "Enter your credentials to access the studio management console",
+        };
+    }
+  };
+
+  const headerText = getHeaderTexts();
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-[#fcf9f4] font-sans antialiased text-[#1c1c19]">
@@ -21,11 +46,10 @@ export default function LoginPage({ onLoginSuccess }) {
                 className="h-8 w-auto object-contain"
               />
             </div>
-            <p className="text-xs text-[#504440] mt-2">
-              {isRegister
-                ? "Sign up to manage your studio events and bookings"
-                : "Enter your credentials to access the studio management console"}
-            </p>
+            <h1 className="text-2xl font-brand text-[#2c1810] font-bold tracking-tight">
+              {headerText.title}
+            </h1>
+            <p className="text-xs text-[#504440] mt-2">{headerText.sub}</p>
           </div>
 
           {/* Notifikasi Global */}
@@ -40,40 +64,73 @@ export default function LoginPage({ onLoginSuccess }) {
             </div>
           )}
 
-          {/* Pemanggilan Komponen Terpisah */}
-          {isRegister ? (
+          {/* Render Form Berdasarkan State authView */}
+          {authView === "register" && (
             <RegisterForm
               onLoginSuccess={onLoginSuccess}
               setErrorMessage={setErrorMessage}
               setSuccessMessage={setSuccessMessage}
-              switchToLogin={() => setIsRegister(false)}
+              switchToLogin={() => setAuthView("login")}
             />
-          ) : (
-            <LoginForm
-              onLoginSuccess={onLoginSuccess}
+          )}
+
+          {authView === "forgot" && (
+            <ForgotPasswordForm
               setErrorMessage={setErrorMessage}
               setSuccessMessage={setSuccessMessage}
             />
           )}
 
-          {/* Bottom Switcher */}
-          <div className="mt-8 pt-6 border-t border-[#f0ede9] w-full flex items-center justify-center gap-1.5 text-center text-xs">
-            <span className="text-[#504440]">
-              {isRegister
-                ? "Already have an account?"
-                : "Don't have an account yet?"}
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                setIsRegister(!isRegister);
+          {authView === "login" && (
+            <LoginForm
+              onLoginSuccess={onLoginSuccess}
+              setErrorMessage={setErrorMessage}
+              setSuccessMessage={setSuccessMessage}
+              onForgotPassword={() => {
+                setAuthView("forgot");
                 setErrorMessage("");
                 setSuccessMessage("");
               }}
-              className="font-semibold text-[#2c1810] hover:underline cursor-pointer"
-            >
-              {isRegister ? "Sign In" : "Register Account"}
-            </button>
+            />
+          )}
+
+          {/* Bottom Switcher */}
+          <div className="mt-8 pt-6 border-t border-[#f0ede9] w-full flex items-center justify-center gap-1.5 text-center text-xs">
+            {authView === "forgot" ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthView("login");
+                  setErrorMessage("");
+                  setSuccessMessage("");
+                }}
+                className="font-semibold text-[#2c1810] hover:underline cursor-pointer flex items-center gap-1"
+              >
+                <span className="material-symbols-outlined text-[14px]">
+                  arrow_back
+                </span>
+                Back to Sign In
+              </button>
+            ) : (
+              <>
+                <span className="text-[#504440]">
+                  {authView === "register"
+                    ? "Already have an account?"
+                    : "Don't have an account yet?"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthView(authView === "register" ? "login" : "register");
+                    setErrorMessage("");
+                    setSuccessMessage("");
+                  }}
+                  className="font-semibold text-[#2c1810] hover:underline cursor-pointer"
+                >
+                  {authView === "register" ? "Sign In" : "Register Account"}
+                </button>
+              </>
+            )}
           </div>
         </div>
 

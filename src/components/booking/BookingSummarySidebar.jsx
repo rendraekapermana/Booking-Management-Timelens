@@ -30,7 +30,7 @@ export default function BookingSummarySidebar({
               Ringkasan Reservasi
             </h3>
             <p className="text-[11px] text-[#504440] mt-0.5">
-              Estimasi investasi atelier photobooth
+              Estimasi investasi photobooth
             </p>
           </div>
           <span className="material-symbols-outlined text-[#855230] text-[20px]">

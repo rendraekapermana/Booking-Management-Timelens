@@ -27,7 +27,7 @@ export const generateReportsExcel = async (reportData, onShowToast) => {
 
   try {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Laporan Atelier");
+    const worksheet = workbook.addWorksheet("Laporan");
 
     // 1. SETTING LEBAR KOLOM
     worksheet.columns = [
@@ -39,7 +39,7 @@ export const generateReportsExcel = async (reportData, onShowToast) => {
     // 2. JUDUL LAPORAN (Merge Cells & Styling)
     worksheet.mergeCells("A1:C1");
     const titleCell = worksheet.getCell("A1");
-    titleCell.value = `LAPORAN EKSEKUTIF TIMELENS ATELIER (${periodName})`;
+    titleCell.value = `LAPORAN EKSEKUTIF TIMELENS (${periodName})`;
     titleCell.font = {
       name: "Arial",
       size: 14,

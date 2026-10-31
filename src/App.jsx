@@ -42,16 +42,37 @@ export default function App() {
 
   // --- CEK SESI SUPABASE ---
   useEffect(() => {
-    // 1. Cek sesi saat aplikasi pertama kali dimuat
+    // Fungsi khusus untuk mengambil profil dari database saat refresh
+    const fetchUserProfile = async (session) => {
+      if (!session) return;
+
+      const { data: profileData, error } = await supabase
+        .from("profiles")
+        .select("fullname, phone")
+        .eq("id", session.user.id)
+        .maybeSingle();
+
+      if (error) console.warn("Gagal load profil saat refresh:", error);
+
+      const userName =
+        profileData?.fullname ||
+        session.user.user_metadata?.full_name ||
+        session.user.email.split("@")[0];
+
+      setCurrentUser({
+        name: userName,
+        email: session.user.email,
+        phone: profileData?.phone || "",
+        role: "Studio Owner",
+      });
+    };
+
+    // 1. Cek sesi saat aplikasi pertama kali dimuat (atau saat di-refresh)
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setIsAuthenticated(true);
-        setCurrentUser({
-          name:
-            session.user.user_metadata?.full_name ||
-            session.user.email.split("@")[0],
-          email: session.user.email,
-        });
+        fetchUserProfile(session); // Panggil fungsi ambil data database
+
         // Jika sedang di halaman login, arahkan ke dashboard
         if (
           window.location.hash.replace("#", "") === "login" ||
@@ -68,12 +89,7 @@ export default function App() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         setIsAuthenticated(true);
-        setCurrentUser({
-          name:
-            session.user.user_metadata?.full_name ||
-            session.user.email.split("@")[0],
-          email: session.user.email,
-        });
+        fetchUserProfile(session); // Panggil fungsi ambil data database
       } else {
         setIsAuthenticated(false);
         setCurrentUser(null);
@@ -313,9 +329,7 @@ export default function App() {
             setIsAuthenticated(true);
             setCurrentUser(userData);
             navigate("dashboard");
-            showToast(
-              `Welcome back, ${userData.name}.`,
-            );
+            showToast(`Welcome back, ${userData.name}.`);
           }}
         />
         {toast && (
@@ -342,7 +356,7 @@ export default function App() {
             setIsAuthenticated(false);
             setCurrentUser(null);
             navigate("login");
-            showToast("Signed out of Timelens Atelier.");
+            showToast("Signed out of Timelens.");
           }}
         />
       </div>

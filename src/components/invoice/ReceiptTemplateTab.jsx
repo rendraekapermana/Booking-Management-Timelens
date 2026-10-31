@@ -51,7 +51,7 @@ export default function ReceiptTemplateTab({ settings, onChange }) {
       {/* SECTION 2: Cap Stempel Atelier & Tanda Tangan */}
       <Card
         title="2. Cap Stempel & Otentikasi Digital"
-        subtitle="Penanda keabsahan tanda terima lunas resmi atelier."
+        subtitle="Penanda keabsahan tanda terima lunas resmi."
       >
         <div className="space-y-5">
           <div className="flex items-center justify-between p-4 bg-[#f6f3ee] rounded-xl border border-[#d3c3be]/40">
@@ -78,7 +78,7 @@ export default function ReceiptTemplateTab({ settings, onChange }) {
           </div>
 
           <Input
-            label="Teks Cap Stempel Atelier"
+            label="Teks Cap Stempel"
             value={settings?.stampText || ""}
             onChange={(e) => updateSetting("stampText", e.target.value)}
           />
