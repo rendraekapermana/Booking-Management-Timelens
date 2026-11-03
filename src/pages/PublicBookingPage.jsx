@@ -40,9 +40,6 @@ export default function PublicBookingPage({
   });
 
   const [showModal, setShowModal] = useState(false);
-  const [orderRefNumber] = useState(
-    `#TL-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-  );
 
   const { basePrice, transportFee, grandTotal } = useBookingPricing({
     duration: formData.duration,
@@ -189,17 +186,21 @@ export default function PublicBookingPage({
               Terima kasih telah mempercayakan momen Anda pada Timelens. Kami
               sedang memverifikasi detail Anda.
             </p>
+
+            {/* Menampilkan Nama Acara di dalam Modal */}
             <div className="w-full bg-[#f6f3ee] rounded-xl p-5 mb-6 text-left border">
               <span className="text-[11px] text-[#504440] uppercase">
-                Ref Number:{" "}
+                Nama Acara:{" "}
               </span>
-              <span className="font-mono font-bold">{orderRefNumber}</span>
+              <span className="font-sans font-bold text-base text-[#090100]">
+                {formData.eventName || "-"}
+              </span>
             </div>
 
-            {/* Tombol WhatsApp diubah menggunakan tag <a> agar aman dari popup blocker */}
+            {/* Tombol WhatsApp menggunakan Nama Acara sebagai pengganti Ref Number */}
             <a
               href={`https://wa.me/628159088814?text=${encodeURIComponent(
-                `Halo Timelens, saya ${formData.clientName} baru saja melakukan reservasi photobooth via website dengan Nomor Referensi: *${orderRefNumber}*. Mohon verifikasi pemesanan saya. Terima kasih!`,
+                `Halo Timelens, saya ${formData.clientName} baru saja melakukan reservasi photobooth via website untuk acara *${formData.eventName || "Acara"}*. Mohon verifikasi pemesanan saya. Terima kasih!`,
               )}`}
               target="_blank"
               rel="noopener noreferrer"
