@@ -19,6 +19,7 @@ import PublicBookingPage from "./pages/PublicBookingPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import IntegrationsPage from "./pages/IntegrationsPage.jsx";
 import { syncBookingToGoogleCalendar } from "./services/calendarSync.js";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import { initialIncomingOrders, initialExpenses } from "./lib/mock/mockData.js";
 
@@ -316,6 +317,7 @@ export default function App() {
             onClose={() => setToast(null)}
           />
         )}
+        <SpeedInsights />
       </>
     );
   }
@@ -339,6 +341,7 @@ export default function App() {
             onClose={() => setToast(null)}
           />
         )}
+        <SpeedInsights />
       </>
     );
   }
@@ -465,6 +468,7 @@ export default function App() {
           />
         )}
       </div>
+      <SpeedInsights />
     </div>
   );
 }
