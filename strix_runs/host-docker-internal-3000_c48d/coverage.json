@@ -1,0 +1,268 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-02 09:32:29 UTC",
+  "run_id": "host-docker-internal-3000_c48d",
+  "run_name": "host-docker-internal-3000_c48d",
+  "scope": {
+    "targets": [
+      {
+        "type": "web_application",
+        "details": {
+          "target_url": "http://host.docker.internal:3000/"
+        },
+        "original": "http://localhost:3000/"
+      }
+    ],
+    "scan_mode": "deep",
+    "scope_mode": "auto",
+    "diff_scope": {
+      "active": false,
+      "mode": "auto"
+    },
+    "instruction": ""
+  },
+  "summary": {
+    "surfaces_reviewed": 1,
+    "outcomes": {
+      "reported": 1
+    },
+    "findings_filed": 0,
+    "gaps": 13
+  },
+  "machine_observed": {
+    "agents": [
+      {
+        "agent_id": "46b65264",
+        "agent_name": "Authorized-Testing-Agent",
+        "status": "running",
+        "skills": [
+          "vulnerabilities/idor",
+          "technologies/supabase"
+        ],
+        "task": "Conduct security testing on http://host.docker.internal:3000/. IMPORTANT: You MUST include the header 'Host: localhost' in ALL requests (e.g., in curl, use '-H \"Host: localhost\"'). Without this header, you will receive 403 Forbidden. Focus on finding IDOR/BOLA, RLS issues, and other vulnerabilities. Refer to the threat model.",
+        "is_root": false
+      },
+      {
+        "agent_id": "b1277c8c",
+        "agent_name": "Booking-Form-Testing-Agent",
+        "status": "stopped",
+        "skills": [
+          "vulnerabilities/xss",
+          "vulnerabilities/sql_injection",
+          "vulnerabilities/business_logic"
+        ],
+        "task": "Assess the public booking form for injection vulnerabilities, business logic flaws, and improper input handling on http://host.docker.internal:3000/. Refer to the saved threat model.",
+        "is_root": false
+      },
+      {
+        "agent_id": "3e75fc4d",
+        "agent_name": "Booking-Form-Testing-Agent-Retry",
+        "status": "failed",
+        "skills": [
+          "vulnerabilities/xss",
+          "vulnerabilities/sql_injection",
+          "vulnerabilities/business_logic"
+        ],
+        "task": "Assess the public booking form for injection vulnerabilities, business logic flaws, and improper input handling on http://host.docker.internal:3000/. Refer to the saved threat model. IMPORTANT: You must include the HTTP header 'Host: localhost' in all your requests, as the target blocks 'host.docker.internal'.",
+        "is_root": false
+      },
+      {
+        "agent_id": "8e33f9cc",
+        "agent_name": "Business-Logic-Agent",
+        "status": "stopped",
+        "skills": [
+          "vulnerabilities/idor",
+          "vulnerabilities/broken_function_level_authorization",
+          "vulnerabilities/business_logic"
+        ],
+        "task": "Test for IDOR and BOLA vulnerabilities in booking, invoice, and expenses management endpoints on http://host.docker.internal:3000/. Test if one studio user can access or modify data from another studio. Refer to the saved threat model.",
+        "is_root": false
+      },
+      {
+        "agent_id": "6dea4770",
+        "agent_name": "Business-Logic-Agent-Retry",
+        "status": "failed",
+        "skills": [
+          "vulnerabilities/idor",
+          "vulnerabilities/broken_function_level_authorization",
+          "vulnerabilities/business_logic"
+        ],
+        "task": "Test for IDOR and BOLA vulnerabilities in booking, invoice, and expenses management endpoints on http://host.docker.internal:3000/. Test if one studio user can access or modify data from another studio. Refer to the saved threat model. IMPORTANT: You must include the HTTP header 'Host: localhost' in all your requests, as the target blocks 'host.docker.internal'.",
+        "is_root": false
+      },
+      {
+        "agent_id": "b5b22b96",
+        "agent_name": "Connectivity-Investigation-Agent",
+        "status": "stopped",
+        "skills": [
+          "tooling/httpx",
+          "tooling/katana"
+        ],
+        "task": "Investigate why http://host.docker.internal:3000/ returns 403 Forbidden. Try to find any accessible paths or endpoints. Map the accessible surface area, including any API endpoints exposed by Supabase.",
+        "is_root": false
+      },
+      {
+        "agent_id": "9c14cf3e",
+        "agent_name": "Recon-and-Mapping-Agent",
+        "status": "stopped",
+        "skills": [
+          "reconnaissance/asset_discovery",
+          "tooling/katana",
+          "tooling/httpx"
+        ],
+        "task": "Perform comprehensive reconnaissance and attack-surface mapping on http://host.docker.internal:3000/. Discover all endpoints, parameters, and technologies. Report back with a summary of the findings so I can derive a threat model.",
+        "is_root": false
+      },
+      {
+        "agent_id": "20298c2d",
+        "agent_name": "Root Agent",
+        "status": "failed",
+        "skills": [],
+        "task": "\n\nURLs: - http://host.docker.internal:3000/",
+        "is_root": true
+      },
+      {
+        "agent_id": "92332b8d",
+        "agent_name": "Supabase-Security-Agent",
+        "status": "stopped",
+        "skills": [
+          "technologies/supabase",
+          "vulnerabilities/broken_function_level_authorization"
+        ],
+        "task": "Test for Row Level Security (RLS) bypasses and Supabase misconfigurations on http://host.docker.internal:3000/. Validate cross-tenant isolation and data access controls by attempting to access data across different user contexts or without proper authorization. Refer to the saved threat model.",
+        "is_root": false
+      },
+      {
+        "agent_id": "5dd2b06a",
+        "agent_name": "Supabase-Security-Agent-Retry",
+        "status": "failed",
+        "skills": [
+          "technologies/supabase",
+          "vulnerabilities/broken_function_level_authorization"
+        ],
+        "task": "Test for Row Level Security (RLS) bypasses and Supabase misconfigurations on http://host.docker.internal:3000/. Validate cross-tenant isolation and data access controls by attempting to access data across different user contexts or without proper authorization. Refer to the saved threat model. IMPORTANT: You must include the HTTP header 'Host: localhost' in all your requests, as the target blocks 'host.docker.internal'.",
+        "is_root": false
+      },
+      {
+        "agent_id": "78a3b217",
+        "agent_name": "Surface-Mapping-Agent",
+        "status": "stopped",
+        "skills": [
+          "tooling/katana",
+          "tooling/agent_browser",
+          "custom/api_spec_testing"
+        ],
+        "task": "Map the accessible surface area of http://host.docker.internal:3000/. Use the 'Host: localhost' header to bypass the Vite host-check restriction. Discover all reachable endpoints, including API-like endpoints, and document them. Also, investigate the Supabase integration by finding where the client-side code interacts with https://vlptvimjwooztqazonrq.supabase.co. Provide a list of all identified paths.",
+        "is_root": false
+      }
+    ],
+    "skills_exercised": [
+      "agent_browser",
+      "api_spec_testing",
+      "asset_discovery",
+      "broken_function_level_authorization",
+      "business_logic",
+      "httpx",
+      "idor",
+      "katana",
+      "sql_injection",
+      "supabase",
+      "xss"
+    ],
+    "findings_filed": 0,
+    "source": "runtime"
+  },
+  "completeness": {
+    "complete": false,
+    "scan_status": "failed",
+    "exit_reason": "error",
+    "caveats": [
+      "The scan ended with status 'failed' rather than completing, so coverage reflects only the work finished before it stopped.",
+      "7 agent(s) did not finish cleanly (Authorized-Testing-Agent, Booking-Form-Testing-Agent, Business-Logic-Agent, Connectivity-Investigation-Agent, Recon-and-Mapping-Agent, Supabase-Security-Agent, Surface-Mapping-Agent); any surface they held is under-covered.",
+      "The run terminated via 'error' rather than the root agent finishing, so remaining scope was not reached."
+    ]
+  },
+  "entries": [
+    {
+      "surface": "http://host.docker.internal:3000/",
+      "risk_area": "Authorization/Access Control",
+      "outcome": "reported",
+      "outcome_label": "Finding reported",
+      "evidence": "Vite server host-check bypass via 'Host: localhost' header successful. Root access confirmed.",
+      "recorded_by": "Connectivity-Investigation-Agent",
+      "recorded_at": "2026-11-02 07:44:18 UTC",
+      "updated_at": "2026-11-02 07:45:16 UTC",
+      "previous_outcomes": [
+        "needs_follow_up"
+      ],
+      "source": "agent_reported"
+    }
+  ],
+  "gaps": [
+    {
+      "kind": "unrecorded_risk_class",
+      "risk_area": "business logic",
+      "detail": "Agent(s) Booking-Form-Testing-Agent, Booking-Form-Testing-Agent-Retry, Business-Logic-Agent, Business-Logic-Agent-Retry were assigned the 'business_logic' skill, but no coverage entry records this class being assessed. Treat it as unexamined, not as clean."
+    },
+    {
+      "kind": "unrecorded_risk_class",
+      "risk_area": "idor",
+      "detail": "Agent(s) Authorized-Testing-Agent, Business-Logic-Agent, Business-Logic-Agent-Retry were assigned the 'idor' skill, but no coverage entry records this class being assessed. Treat it as unexamined, not as clean."
+    },
+    {
+      "kind": "unrecorded_risk_class",
+      "risk_area": "sql injection",
+      "detail": "Agent(s) Booking-Form-Testing-Agent, Booking-Form-Testing-Agent-Retry were assigned the 'sql_injection' skill, but no coverage entry records this class being assessed. Treat it as unexamined, not as clean."
+    },
+    {
+      "kind": "unrecorded_risk_class",
+      "risk_area": "xss",
+      "detail": "Agent(s) Booking-Form-Testing-Agent, Booking-Form-Testing-Agent-Retry were assigned the 'xss' skill, but no coverage entry records this class being assessed. Treat it as unexamined, not as clean."
+    },
+    {
+      "kind": "agent_recorded_no_coverage",
+      "agent_name": "Authorized-Testing-Agent",
+      "detail": "Authorized-Testing-Agent ran (status: running) without recording any coverage. Whatever it examined is absent from this record."
+    },
+    {
+      "kind": "agent_recorded_no_coverage",
+      "agent_name": "Booking-Form-Testing-Agent",
+      "detail": "Booking-Form-Testing-Agent ran (status: stopped) without recording any coverage. Whatever it examined is absent from this record."
+    },
+    {
+      "kind": "agent_recorded_no_coverage",
+      "agent_name": "Booking-Form-Testing-Agent-Retry",
+      "detail": "Booking-Form-Testing-Agent-Retry ran (status: failed) without recording any coverage. Whatever it examined is absent from this record."
+    },
+    {
+      "kind": "agent_recorded_no_coverage",
+      "agent_name": "Business-Logic-Agent",
+      "detail": "Business-Logic-Agent ran (status: stopped) without recording any coverage. Whatever it examined is absent from this record."
+    },
+    {
+      "kind": "agent_recorded_no_coverage",
+      "agent_name": "Business-Logic-Agent-Retry",
+      "detail": "Business-Logic-Agent-Retry ran (status: failed) without recording any coverage. Whatever it examined is absent from this record."
+    },
+    {
+      "kind": "agent_recorded_no_coverage",
+      "agent_name": "Recon-and-Mapping-Agent",
+      "detail": "Recon-and-Mapping-Agent ran (status: stopped) without recording any coverage. Whatever it examined is absent from this record."
+    },
+    {
+      "kind": "agent_recorded_no_coverage",
+      "agent_name": "Supabase-Security-Agent",
+      "detail": "Supabase-Security-Agent ran (status: stopped) without recording any coverage. Whatever it examined is absent from this record."
+    },
+    {
+      "kind": "agent_recorded_no_coverage",
+      "agent_name": "Supabase-Security-Agent-Retry",
+      "detail": "Supabase-Security-Agent-Retry ran (status: failed) without recording any coverage. Whatever it examined is absent from this record."
+    },
+    {
+      "kind": "agent_recorded_no_coverage",
+      "agent_name": "Surface-Mapping-Agent",
+      "detail": "Surface-Mapping-Agent ran (status: stopped) without recording any coverage. Whatever it examined is absent from this record."
+    }
+  ]
+}

@@ -1,0 +1,204 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Strix",
+          "informationUri": "https://strix.ai",
+          "rules": [
+            {
+              "id": "CWE-862",
+              "name": "Row Level Security (RLS) Bypass / Missing Authorization in Supabase `bookings` API",
+              "shortDescription": {
+                "text": "Row Level Security (RLS) Bypass / Missing Authorization in Supabase `bookings` API"
+              },
+              "fullDescription": {
+                "text": "The Supabase API endpoint `/rest/v1/bookings` is not protected by Row Level Security (RLS), allowing an authenticated user to access all booking records, including those belonging to other customers or studios."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "help": {
+                "text": "The Supabase API endpoint `/rest/v1/bookings` is not protected by Row Level Security (RLS), allowing an authenticated user to access all booking records, including those belonging to other customers or studios.\n\nUnauthorized access to all booking records, including PII such as customer names, emails, phone numbers, and booking details.\n\nEnable Row Level Security (RLS) on the `bookings` table in Supabase and define policies that restrict access to records belonging to the authenticated user's organization/studio.",
+                "markdown": "The Supabase API endpoint `/rest/v1/bookings` is not protected by Row Level Security (RLS), allowing an authenticated user to access all booking records, including those belonging to other customers or studios.\n\nUnauthorized access to all booking records, including PII such as customer names, emails, phone numbers, and booking details.\n\nEnable Row Level Security (RLS) on the `bookings` table in Supabase and define policies that restrict access to records belonging to the authenticated user's organization/studio."
+              },
+              "properties": {
+                "security-severity": "6.5",
+                "tags": [
+                  "security",
+                  "CWE-862",
+                  "stride:E"
+                ]
+              },
+              "helpUri": "https://cwe.mitre.org/data/definitions/862.html"
+            },
+            {
+              "id": "strix-coverage/reachability",
+              "name": "Reachability",
+              "shortDescription": {
+                "text": "Coverage: Reachability"
+              },
+              "fullDescription": {
+                "text": "Coverage of Reachability across the assessed attack surface."
+              },
+              "defaultConfiguration": {
+                "level": "none"
+              },
+              "help": {
+                "text": "Coverage of Reachability across the assessed attack surface.",
+                "markdown": "Coverage of Reachability across the assessed attack surface."
+              },
+              "properties": {
+                "tags": [
+                  "coverage"
+                ]
+              }
+            },
+            {
+              "id": "strix-coverage/authentication",
+              "name": "Authentication",
+              "shortDescription": {
+                "text": "Coverage: Authentication"
+              },
+              "fullDescription": {
+                "text": "Coverage of Authentication across the assessed attack surface."
+              },
+              "defaultConfiguration": {
+                "level": "none"
+              },
+              "help": {
+                "text": "Coverage of Authentication across the assessed attack surface.",
+                "markdown": "Coverage of Authentication across the assessed attack surface."
+              },
+              "properties": {
+                "tags": [
+                  "coverage"
+                ]
+              }
+            }
+          ],
+          "version": "1.7.0"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CWE-862",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "Row Level Security (RLS) Bypass / Missing Authorization in Supabase `bookings` API\n\nThe Supabase API endpoint `/rest/v1/bookings` is not protected by Row Level Security (RLS), allowing an authenticated user to access all booking records, including those belonging to other customers or studios."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "SECURITY.md"
+                }
+              }
+            },
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "/rest/v1/bookings",
+                  "kind": "endpoint"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "primaryLocationLineHash": "3585375fa684ee9db14e2e52baa5b7e108e166db24c4976f4adf0c27fb34b6b5"
+          },
+          "properties": {
+            "security-severity": "6.5",
+            "strix_vuln_class_hash": "5743181493c9bf9c378a767eb9c2bee8704221d39e630e3b082619f0a6440f02",
+            "synthetic_location": true,
+            "strix": {
+              "id": "vuln-0001",
+              "severity": "medium",
+              "cvss": 6.5,
+              "timestamp": "2026-11-02 18:09:48 UTC",
+              "target": "vlptvimjwooztqazonrq.supabase.co",
+              "endpoint": "/rest/v1/bookings",
+              "method": "GET",
+              "cwe": "CWE-862",
+              "impact": "Unauthorized access to all booking records, including PII such as customer names, emails, phone numbers, and booking details.",
+              "technical_analysis": "The application uses a Supabase backend. The `bookings` table has no RLS policies defined, which means the Supabase REST API defaults to allowing unauthorized read access if the request is authenticated, or in this case, even if not fully restricted, it returns all records due to the lack of restrictive policies.",
+              "remediation_steps": "Enable Row Level Security (RLS) on the `bookings` table in Supabase and define policies that restrict access to records belonging to the authenticated user's organization/studio.",
+              "counterevidence": "No RLS policy or other access controls were observed on the `/rest/v1/bookings` API endpoint. The endpoint successfully returns all booking records regardless of the authenticated user's scope.",
+              "confidence": "high",
+              "severity_change_conditions": "If the API was actually designed to be publicly accessible, then the severity would be lower; however, for a booking management application, this is a critical data isolation failure.",
+              "poc": {
+                "description": "1. Log in to the application.\n2. Intercept the request to `/rest/v1/bookings` or replay the request directly to the Supabase API with the application's authentication token.\n3. Observe that the API returns bookings for all customers, not just those associated with the current user.",
+                "script_available": true
+              }
+            }
+          }
+        },
+        {
+          "ruleId": "strix-coverage/reachability",
+          "ruleIndex": 1,
+          "kind": "pass",
+          "level": "none",
+          "message": {
+            "text": "Reachability — No issue identified: http://172.26.144.1:4173/\n\nTarget http://172.26.144.1:4173/ is reachable and returns a 200 OK."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "http://172.26.144.1:4173/"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "strix": {
+              "coverage_outcome": "no_issue_found",
+              "risk_area": "Reachability",
+              "surface": "http://172.26.144.1:4173/",
+              "recorded_by": "Recon Specialist",
+              "source": "agent_reported"
+            }
+          }
+        },
+        {
+          "ruleId": "strix-coverage/authentication",
+          "ruleIndex": 2,
+          "kind": "pass",
+          "level": "none",
+          "message": {
+            "text": "Authentication — No issue identified: POST /auth/v1/login (via UI)\n\nLogin successful with provided credentials at http://172.26.144.1:4173/. User teststrix2@gmail.com authenticated and redirected to /#dashboard."
+          },
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "POST /auth/v1/login (via UI)"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "strix": {
+              "coverage_outcome": "no_issue_found",
+              "risk_area": "Authentication",
+              "surface": "POST /auth/v1/login (via UI)",
+              "recorded_by": "Authenticated Testing Specialist",
+              "source": "agent_reported"
+            }
+          }
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "properties": {
+        "syntheticLocationCount": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "run_id": "host-docker-internal-3000_3d2a",
+  "run_name": "host-docker-internal-3000_3d2a",
+  "start_time": "2026-11-02T07:28:59.970216+00:00",
+  "end_time": "2026-11-02T07:29:30.016419+00:00",
+  "status": "stopped",
+  "auth_mode": "api_key",
+  "targets_info": [
+    {
+      "type": "web_application",
+      "details": {
+        "target_url": "http://host.docker.internal:3000/"
+      },
+      "original": "http://localhost:3000/"
+    }
+  ],
+  "llm_usage": {
+    "requests": 1,
+    "input_tokens": 57090,
+    "input_tokens_details": [
+      {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      }
+    ],
+    "output_tokens": 150,
+    "output_tokens_details": [
+      {
+        "reasoning_tokens": 130
+      }
+    ],
+    "total_tokens": 57240,
+    "request_usage_entries": [
+      {
+        "input_tokens": 57090,
+        "output_tokens": 150,
+        "total_tokens": 57240,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens_details": {
+          "reasoning_tokens": 130
+        }
+      }
+    ],
+    "cost": 0.0144975,
+    "providers": {},
+    "agents": [
+      {
+        "requests": 1,
+        "input_tokens": 57090,
+        "input_tokens_details": [
+          {
+            "cache_write_tokens": 0,
+            "cached_tokens": 0
+          }
+        ],
+        "output_tokens": 150,
+        "output_tokens_details": [
+          {
+            "reasoning_tokens": 130
+          }
+        ],
+        "total_tokens": 57240,
+        "request_usage_entries": [
+          {
+            "input_tokens": 57090,
+            "output_tokens": 150,
+            "total_tokens": 57240,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 130
+            }
+          }
+        ],
+        "agent_id": "df4ce8c7",
+        "agent_name": "Root Agent",
+        "model": "gemini/gemini-3.1-flash-lite",
+        "cost": 0.0144975
+      }
+    ]
+  },
+  "scan_mode": "deep",
+  "instruction": "",
+  "user_instruction": null,
+  "non_interactive": false,
+  "local_sources": [],
+  "workspace_files": [],
+  "workspace_mount": null,
+  "diff_scope": {
+    "active": false,
+    "mode": "auto"
+  },
+  "scope_mode": "auto",
+  "diff_base": null
+}

@@ -19,42 +19,70 @@ export default function IntegrationsPage({ onShowToast }) {
   }, [connectedAccounts]);
 
   // Logika Asli Popup Login Google
+  // Logika Baru Popup Login Google (Auth Code Flow untuk Refresh Token)
   const login = useGoogleLogin({
-    scope: "https://www.googleapis.com/auth/calendar.events", // Minta izin akses edit kalender
-    onSuccess: async (tokenResponse) => {
+    flow: "auth-code", // 🔥 KUNCI UTAMA: Meminta kode otorisasi, bukan sekadar token 1 jam
+    scope: "https://www.googleapis.com/auth/calendar.events",
+    onSuccess: async (codeResponse) => {
       try {
-        // Ambil info email pengguna dari token yang didapat
+        setIsConnecting(true); // Nyalakan loading saat proses tukar token
+
+        // 1. Tukar 'code' yang didapat dengan 'Refresh Token' permanen ke server Google
+        const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            code: codeResponse.code,
+            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID, // Pastikan nama env kamu sesuai
+            client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET, // 🔥 BUTUH INI DI .env LOKALMU
+            redirect_uri: "postmessage",
+            grant_type: "authorization_code",
+          }),
+        });
+
+        const tokens = await tokenRes.json();
+
+        if (!tokens.access_token) {
+          throw new Error("Gagal menukar kode otorisasi");
+        }
+
+        // 2. Ambil info email pengguna dari token baru
         const userInfoRes = await fetch(
           "https://www.googleapis.com/oauth2/v3/userinfo",
           {
-            headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+            headers: { Authorization: `Bearer ${tokens.access_token}` },
           },
         );
         const userInfo = await userInfoRes.json();
 
+        // 3. Simpan data lengkap beserta REFRESH TOKEN
         const newAccount = {
           id: Date.now(),
           email: userInfo.email,
           name: userInfo.name || "Admin Studio",
           role: "Primary Calendar",
-          accessToken: tokenResponse.access_token, // Simpan token untuk dipakai Auto-Sync
+          accessToken: tokens.access_token, // Token 1 jam untuk dipakai saat ini juga
+          refreshToken: tokens.refresh_token, // 🔥 TOKEN PERMANEN: Simpan ini baik-baik!
         };
 
-        setConnectedAccounts([...connectedAccounts, newAccount]);
-        if (onShowToast)
+        setConnectedAccounts((prev) => [...prev, newAccount]);
+
+        if (onShowToast) {
           onShowToast(
-            `Akun ${userInfo.email} berhasil dihubungkan!`,
+            `Akun ${userInfo.email} berhasil dihubungkan permanen!`,
             "success",
           );
+        }
       } catch (err) {
+        console.error(err);
         if (onShowToast)
           onShowToast("Gagal mengambil info akun Google.", "error");
       } finally {
-        setIsConnecting(false); // Matikan loading
+        setIsConnecting(false);
       }
     },
     onError: () => {
-      setIsConnecting(false); // Matikan loading jika dibatalkan/error
+      setIsConnecting(false);
       if (onShowToast) onShowToast("Login Google dibatalkan/gagal.", "error");
     },
   });

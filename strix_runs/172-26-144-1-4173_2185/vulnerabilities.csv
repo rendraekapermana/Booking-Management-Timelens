@@ -1,0 +1,2 @@
+id,title,severity,timestamp,file
+vuln-0001,Row Level Security (RLS) Bypass / Missing Authorization in Supabase `bookings` API,MEDIUM,2026-11-02 18:09:48 UTC,vulnerabilities/vuln-0001.md

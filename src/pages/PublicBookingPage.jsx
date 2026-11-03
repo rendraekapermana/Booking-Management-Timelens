@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { formatDateID } from "../lib/formatters.js";
 import { studioProfile } from "../lib/mock/mockData.js";
 import { useBookingPricing } from "../hooks/useBookingPricing.js";
@@ -83,7 +83,6 @@ export default function PublicBookingPage({
       date: formData.eventDate,
       time: formData.eventTime ? formData.eventTime + " WIB" : "-",
 
-      // 🔥 PERBAIKAN: Menggunakan venueName sesuai permintaan (bukan venue_address)
       venueName: gabunganAlamat,
       venue_maps_link: formData.mapsLink,
 
@@ -146,7 +145,6 @@ export default function PublicBookingPage({
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <div className="lg:col-span-7 flex flex-col gap-8">
-              {/* KOMPONEN FORM YANG SUDAH DIPISAH */}
               <SectionA formData={formData} setFormData={setFormData} />
               <SectionB
                 formData={formData}
@@ -163,7 +161,6 @@ export default function PublicBookingPage({
             </div>
 
             <div className="lg:col-span-5 flex flex-col gap-5 lg:sticky lg:top-28">
-              {/* KOMPONEN RINGKASAN */}
               <OrderSummary
                 formData={formData}
                 formattedDate={formattedDate}
@@ -199,23 +196,24 @@ export default function PublicBookingPage({
               <span className="font-mono font-bold">{orderRefNumber}</span>
             </div>
 
-            <button
+            {/* Tombol WhatsApp diubah menggunakan tag <a> agar aman dari popup blocker */}
+            <a
+              href={`https://wa.me/628159088814?text=${encodeURIComponent(
+                `Halo Timelens, saya ${formData.clientName} baru saja melakukan reservasi photobooth via website dengan Nomor Referensi: *${orderRefNumber}*. Mohon verifikasi pemesanan saya. Terima kasih!`,
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={() => {
-                const waNumber = "6281234567890";
-                const message = `Halo Timelens, saya ${formData.clientName} baru saja melakukan reservasi photobooth via website dengan Nomor Referensi: *${orderRefNumber}*. Mohon verifikasi pemesanan saya. Terima kasih!`;
-                window.open(
-                  `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`,
-                  "_blank",
-                );
                 setShowModal(false);
               }}
-              className="w-full py-3.5 bg-[#25D366] hover:bg-[#1DA851] text-white text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-3.5 bg-[#25D366] hover:bg-[#1DA851] text-white text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
               <span className="material-symbols-outlined text-[20px]">
                 forum
               </span>
               <span>Konfirmasi via WhatsApp</span>
-            </button>
+            </a>
+
             <p className="text-[10px] text-[#504440] mt-4">
               Silakan klik tombol di atas untuk menghubungi tim kami via
               WhatsApp agar proses verifikasi lebih cepat.

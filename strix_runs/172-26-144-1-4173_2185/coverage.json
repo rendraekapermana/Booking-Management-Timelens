@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-02 18:16:38 UTC",
+  "run_id": "172-26-144-1-4173_2185",
+  "run_name": "172-26-144-1-4173_2185",
+  "scope": {
+    "targets": [
+      {
+        "type": "web_application",
+        "details": {
+          "target_url": "http://172.26.144.1:4173/"
+        },
+        "original": "http://172.26.144.1:4173/"
+      }
+    ],
+    "scan_mode": "deep",
+    "scope_mode": "auto",
+    "diff_scope": {
+      "active": false,
+      "mode": "auto"
+    },
+    "instruction": "Perform a comprehensive authorized security assessment of the\nTimelens Booking Management application.\n\nTARGET:\nhttp://172.26.144.1:4173/\n\nAUTHENTICATION:\n- Discover the application's login page.\n- Log in using the dedicated testing account below.\n- Email: teststrix2@gmail.com\n- Password: teststrix2\n- Verify that authentication succeeds before conducting authenticated tests.\n- If login fails, report the reason and continue with unauthenticated testing.\n- Do not attempt credential stuffing or brute force.\n\nTESTING SCOPE:\n\n1. Unauthenticated security:\n   - Authentication bypass\n   - Publicly accessible protected pages\n   - Exposed source files and configuration\n   - API endpoint access without authentication\n\n2. Authenticated security:\n   - Session and JWT handling\n   - Broken Access Control\n   - IDOR vulnerabilities\n   - Unauthorized CRUD operations\n   - Input validation and injection\n   - Sensitive information exposure\n\n3. Supabase security:\n   - Row Level Security (RLS)\n   - Unauthorized database access\n   - Cross-user data access\n   - Storage permissions\n   - API authorization\n\n4. Business logic:\n   - Booking manipulation\n   - Unauthorized booking updates and deletion\n   - Invoice and payment manipulation\n   - Access to other users' records\n\nIMPORTANT SAFETY RULES:\n- Only test the specified target and its associated Supabase project.\n- Do not access unrelated systems.\n- Do not delete real data.\n- Do not send real emails or trigger real payments.\n- Do not perform destructive database operations.\n- Use only test accounts and dummy records.\n- Preserve existing application data.\n- Validate findings with safe proof-of-concept requests.\n- Report unsuccessful login attempts clearly.\n\nProvide detailed findings, severity, evidence,\naffected endpoints, reproduction steps, and remediation."
+  },
+  "summary": {
+    "surfaces_reviewed": 3,
+    "outcomes": {
+      "reported": 1,
+      "no_issue_found": 2
+    },
+    "findings_filed": 1,
+    "gaps": 5
+  },
+  "machine_observed": {
+    "agents": [
+      {
+        "agent_id": "68e23a06",
+        "agent_name": "Authenticated Assessment Specialist",
+        "status": "failed",
+        "skills": [
+          "vulnerabilities/authentication_jwt",
+          "vulnerabilities/broken_function_level_authorization",
+          "vulnerabilities/idor"
+        ],
+        "task": "1. Verify authentication using teststrix2@gmail.com / teststrix2.\n2. Test session handling and JWT security.\n3. Test for broken access control and IDOR vulnerabilities in booking management features.\n4. Record coverage for all surfaces tested.\n5. Report any vulnerabilities found.\nDo not proceed to Supabase RLS testing (that is for the Supabase Specialist).",
+        "is_root": false
+      },
+      {
+        "agent_id": "59ba2d14",
+        "agent_name": "Authenticated Testing Specialist",
+        "status": "failed",
+        "skills": [
+          "vulnerabilities/authentication_jwt",
+          "vulnerabilities/broken_function_level_authorization",
+          "vulnerabilities/idor",
+          "technologies/supabase"
+        ],
+        "task": "1. Log in using teststrix2@gmail.com / teststrix2.\n2. Verify authentication success.\n3. Test session handling, JWT security, and access control.\n4. Systematically test Supabase Row Level Security (RLS) for data isolation.\n5. Verify unauthorized database access or cross-tenant data access.\n6. Test storage permissions and API authorization.\n7. Record coverage for all surfaces tested.\n8. Report any vulnerabilities found.\nIf you encounter connectivity or authentication issues, report them clearly before attempting further testing.",
+        "is_root": false
+      },
+      {
+        "agent_id": "c0c018f1",
+        "agent_name": "Recon Specialist",
+        "status": "completed",
+        "skills": [
+          "reconnaissance/asset_discovery",
+          "tooling/agent_browser",
+          "tooling/katana",
+          "tooling/httpx"
+        ],
+        "task": "1. Perform thorough reconnaissance of http://172.26.144.1:4173/ and identify all endpoints, subdomains, and technologies.\n2. Call `get_threat_model` on http://172.26.144.1:4173/. If found: false, derive a threat model and call `save_threat_model`.\n3. Map the attack surface thoroughly.\n4. Record coverage for all assessed surfaces.\n5. Provide a summary of the mapped attack surface in your final report.",
+        "is_root": false
+      },
+      {
+        "agent_id": "e1be358b",
+        "agent_name": "Root Agent",
+        "status": "completed",
+        "skills": [],
+        "task": "\n\nURLs: - http://172.26.144.1:4173/\n\nSpecial instructions: Perform a comprehensive authorized security assessment of the\nTimelens Booking Management application.\n\nTARGET:\nhttp://172.26.144.1:4173/\n\nAUTHENTICATION:\n- Discover the application's login page.\n- Log in using the dedicated testing account below.\n- Email: teststrix2@gmail.com\n- Password: teststrix2\n- Verify that authentication succeeds before conducting authenticated tests.\n- If login fails, report the reason and continue with unauthenticated testing.\n- Do not attempt credential stuffing or brute force.\n\nTESTING SCOPE:\n\n1. Unauthenticated security:\n   - Authentication bypass\n   - Publicly accessible protected pages\n   - Exposed source files and configuration\n   - API endpoint access without authentication\n\n2. Authenticated security:\n   - Session and JWT handling\n   - Broken Access Control\n   - IDOR vulnerabilities\n   - Unauthorized CRUD operations\n   - Input validation and injection\n   - Sensitive information exposure\n\n3. Supabase security:\n   - Row Level Security (RLS)\n   - Unauthorized database access\n   - Cross-user data access\n   - Storage permissions\n   - API authorization\n\n4. Business logic:\n   - Booking manipulation\n   - Unauthorized booking updates and deletion\n   - Invoice and payment manipulation\n   - Access to other users' records\n\nIMPORTANT SAFETY RULES:\n- Only test the specified target and its associated Supabase project.\n- Do not access unrelated systems.\n- Do not delete real data.\n- Do not send real emails or trigger real payments.\n- Do not perform destructive database operations.\n- Use only test accounts and dummy records.\n- Preserve existing application data.\n- Validate findings with safe proof-of-concept requests.\n- Report unsuccessful login attempts clearly.\n\nProvide detailed findings, severity, evidence,\naffected endpoints, reproduction steps, and remediation.",
+        "is_root": true
+      },
+      {
+        "agent_id": "03928bf9",
+        "agent_name": "Supabase Specialist",
+        "status": "failed",
+        "skills": [
+          "technologies/supabase",
+          "vulnerabilities/nosql_injection"
+        ],
+        "task": "1. Systematically test Supabase Row Level Security (RLS) for data isolation.\n2. Verify unauthorized database access or cross-tenant data access.\n3. Test storage permissions.\n4. Test API authorization.\n5. Record coverage for all surfaces tested.\n6. Report any vulnerabilities found.",
+        "is_root": false
+      },
+      {
+        "agent_id": "4eae6277",
+        "agent_name": "Supabase Specialist (Retake)",
+        "status": "failed",
+        "skills": [
+          "technologies/supabase",
+          "vulnerabilities/nosql_injection"
+        ],
+        "task": "Previous Supabase specialist failed. Please investigate Supabase RLS and data isolation.\n1. Systematically test Supabase Row Level Security (RLS) for data isolation.\n2. Verify unauthorized database access or cross-tenant data access.\n3. Test storage permissions.\n4. Test API authorization.\n5. Record coverage for all surfaces tested.\n6. Report any vulnerabilities found.\nIf you encounter connectivity issues, investigate and report them.",
+        "is_root": false
+      }
+    ],
+    "skills_exercised": [
+      "agent_browser",
+      "asset_discovery",
+      "authentication_jwt",
+      "broken_function_level_authorization",
+      "httpx",
+      "idor",
+      "katana",
+      "nosql_injection",
+      "supabase"
+    ],
+    "findings_filed": 1,
+    "source": "runtime"
+  },
+  "completeness": {
+    "complete": true,
+    "scan_status": "completed",
+    "exit_reason": "finished_by_tool",
+    "caveats": []
+  },
+  "entries": [
+    {
+      "surface": "http://172.26.144.1:4173/",
+      "risk_area": "Reachability",
+      "outcome": "no_issue_found",
+      "outcome_label": "No issue identified",
+      "evidence": "Target http://172.26.144.1:4173/ is reachable and returns a 200 OK.",
+      "recorded_by": "Recon Specialist",
+      "recorded_at": "2026-11-02 17:09:40 UTC",
+      "updated_at": "",
+      "previous_outcomes": [],
+      "source": "agent_reported"
+    },
+    {
+      "surface": "POST /auth/v1/login (via UI)",
+      "risk_area": "Authentication",
+      "outcome": "no_issue_found",
+      "outcome_label": "No issue identified",
+      "evidence": "Login successful with provided credentials at http://172.26.144.1:4173/. User teststrix2@gmail.com authenticated and redirected to /#dashboard.",
+      "recorded_by": "Authenticated Testing Specialist",
+      "recorded_at": "2026-11-02 17:57:45 UTC",
+      "updated_at": "",
+      "previous_outcomes": [],
+      "source": "agent_reported"
+    },
+    {
+      "surface": "/rest/v1/bookings",
+      "risk_area": "Supabase RLS/IDOR",
+      "outcome": "reported",
+      "outcome_label": "Finding reported",
+      "evidence": "Found IDOR/RLS bypass allowing unauthorized access to all booking records.",
+      "recorded_by": "Root Agent",
+      "recorded_at": "2026-11-02 18:11:46 UTC",
+      "updated_at": "",
+      "previous_outcomes": [],
+      "source": "agent_reported"
+    }
+  ],
+  "gaps": [
+    {
+      "kind": "unrecorded_risk_class",
+      "risk_area": "broken function level authorization",
+      "detail": "Agent(s) Authenticated Assessment Specialist, Authenticated Testing Specialist were assigned the 'broken_function_level_authorization' skill, but no coverage entry records this class being assessed. Treat it as unexamined, not as clean."
+    },
+    {
+      "kind": "unrecorded_risk_class",
+      "risk_area": "nosql injection",
+      "detail": "Agent(s) Supabase Specialist, Supabase Specialist (Retake) were assigned the 'nosql_injection' skill, but no coverage entry records this class being assessed. Treat it as unexamined, not as clean."
+    },
+    {
+      "kind": "agent_recorded_no_coverage",
+      "agent_name": "Authenticated Assessment Specialist",
+      "detail": "Authenticated Assessment Specialist ran (status: failed) without recording any coverage. Whatever it examined is absent from this record."
+    },
+    {
+      "kind": "agent_recorded_no_coverage",
+      "agent_name": "Supabase Specialist",
+      "detail": "Supabase Specialist ran (status: failed) without recording any coverage. Whatever it examined is absent from this record."
+    },
+    {
+      "kind": "agent_recorded_no_coverage",
+      "agent_name": "Supabase Specialist (Retake)",
+      "detail": "Supabase Specialist (Retake) ran (status: failed) without recording any coverage. Whatever it examined is absent from this record."
+    }
+  ]
+}
