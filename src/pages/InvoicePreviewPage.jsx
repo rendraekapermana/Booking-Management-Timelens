@@ -51,6 +51,10 @@ export default function InvoicePreviewPage({
   const bankName = settings?.bankName || "BCA";
   const accountNum = settings?.accountNum || "8830921144";
   const accountName = settings?.accountName || "PT Timelens Kreasi Abadi";
+  const bankName2 = settings?.bankName2 || "JAGO";
+  const accountNum2 = settings?.accountNum2 || "8830492110";
+  const bankName3 = settings?.bankName3 || "MANDIRI";
+  const accountNum3 = settings?.accountNum3 || "1640003054543";
   const paymentInstruction =
     settings?.paymentInstruction ||
     "Mohon cantumkan Nomor Invoice pada berita transfer.";
@@ -73,12 +77,10 @@ export default function InvoicePreviewPage({
   const downPayment = Number(booking.downPayment || 0);
   const remainingPayment = totalPrice - downPayment;
 
-  const handleCopyAccount = () => {
-    navigator.clipboard?.writeText(accountNum);
+  const handleCopyAccount = (bank, account) => {
+    navigator.clipboard?.writeText(account);
     if (onShowToast)
-      onShowToast(
-        `Nomor rekening ${bankName} ${accountNum} disalin ke clipboard`,
-      );
+      onShowToast(`Nomor rekening ${bank} ${account} disalin ke clipboard`);
   };
 
   const handleDownloadPDF = () => {
@@ -88,11 +90,8 @@ export default function InvoicePreviewPage({
 
   const handleSendWhatsapp = () => {
     const rawTemplate =
-      docType === "invoice"
-        ? settings?.whatsappTemplates?.dp ||
-          "Halo kak {nama_klien}, berikut kami lampirkan Invoice Uang Muka untuk event *{nama_event}*.\n\nTotal: {total_tagihan}\nDP Diterima: {nominal_dp}\n\nTransfer Sisa Pelunasan: {nama_bank} {nomor_rekening} a.n {nama_holder}"
-        : settings?.whatsappTemplates?.receipt ||
-          "Halo kak {nama_klien}, berikut kami lampirkan Kwitansi Pelunasan Resmi untuk event *{nama_event}*.\n\nTotal Lunas: {total_tagihan}";
+      settings?.whatsappTemplates?.receipt ||
+      defaultInvoiceSettings.whatsappTemplates.receipt;
 
     const waText = rawTemplate
       .replace(/{nama_klien}/g, booking.customerName || "")
@@ -106,7 +105,7 @@ export default function InvoicePreviewPage({
       .replace(/{nama_studio}/g, studioName);
 
     window.open(
-      `https://wa.me/${booking.customerPhone?.replace(/\D/g, "")}?text=${encodeURIComponent(waText)}`,
+      `https://wa.me/${booking.customerPhone?.replace(/\D/g, "").replace(/^0/, "62")}?text=${encodeURIComponent(waText)}`,
       "_blank",
     );
   };
@@ -118,7 +117,7 @@ export default function InvoicePreviewPage({
         onChangeDocType={setDocType}
         onBack={() => onNavigate("invoice-settings")}
         onDownloadPDF={handleDownloadPDF}
-        onSendWhatsapp={handleSendWhatsapp}
+        onSendWhatsapp={docType === "receipt" ? handleSendWhatsapp : undefined}
       />
 
       <div className="w-full max-w-[840px] mt-6 bg-[#ffffff] text-[#1c1c19] rounded-xl shadow-[0_12px_32px_rgba(44,24,16,0.06)] px-10 sm:px-14 py-12 relative overflow-hidden border border-[#d3c3be]/40 print-sheet">
@@ -281,33 +280,47 @@ export default function InvoicePreviewPage({
         </div>
 
         {/* Kotak Rekening Pembayaran */}
-        <div className="my-6 p-4 rounded-lg bg-[#fcf9f4] border border-[#d3c3be]/40 text-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="space-y-1">
-            <span className="text-[10px] uppercase tracking-wider font-semibold text-[#855230]">
-              Rekening Pembayaran Pelunasan ({bankName})
-            </span>
-            <div className="flex items-center gap-2 font-mono font-bold text-sm text-[#090100]">
-              <span>{accountNum}</span>
-              <span className="text-xs font-normal font-sans text-[#504440]">
-                a.n. {accountName}
-              </span>
-            </div>
-            {paymentInstruction && (
-              <p className="text-[11px] text-[#504440] mt-1">
-                {paymentInstruction}
-              </p>
-            )}
+        <div className="my-6 p-4 rounded-lg bg-[#fcf9f4] border border-[#d3c3be]/40 text-xs">
+          <h3 className="text-[10px] uppercase tracking-wider font-semibold text-[#855230] mb-4">
+            Rekening Pembayaran Pelunasan
+          </h3>
+          <div className="flex flex-col gap-4">
+            {[
+              { bank: bankName, account: accountNum },
+              { bank: bankName2, account: accountNum2 },
+              { bank: bankName3, account: accountNum3 },
+            ].map(({ bank, account }) => (
+              <div
+                key={`${bank}-${account}`}
+                className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-[#d3c3be]/30 pb-4 last:border-b-0 last:pb-0"
+              >
+                <div className="space-y-1">
+                  <span className="font-semibold text-[#855230]">{bank}</span>
+                  <div className="flex items-center gap-2 font-mono font-bold text-sm text-[#090100]">
+                    <span>{account}</span>
+                    <span className="text-xs font-normal font-sans text-[#504440]">
+                      a.n. {accountName}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopyAccount(bank, account)}
+                  className="px-3 py-1.5 bg-[#f6f3ee] hover:bg-[#ebe8e3] text-[#855230] border border-[#d3c3be]/50 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+                >
+                  <span className="material-symbols-outlined text-[15px]">
+                    content_copy
+                  </span>
+                  <span>Salin Rekening</span>
+                </button>
+              </div>
+            ))}
           </div>
-          <button
-            type="button"
-            onClick={handleCopyAccount}
-            className="px-3 py-1.5 bg-[#f6f3ee] hover:bg-[#ebe8e3] text-[#855230] border border-[#d3c3be]/50 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
-          >
-            <span className="material-symbols-outlined text-[15px]">
-              content_copy
-            </span>
-            <span>Salin Rekening</span>
-          </button>
+          {paymentInstruction && (
+            <p className="text-[11px] text-[#504440] mt-4">
+              {paymentInstruction}
+            </p>
+          )}
         </div>
 
         <div className="flex justify-end gap-6 my-6 pt-2">

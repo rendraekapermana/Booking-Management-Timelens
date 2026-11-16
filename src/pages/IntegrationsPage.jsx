@@ -1,82 +1,77 @@
 import React, { useState, useEffect } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
+import {
+  connectGoogleAccount,
+  disconnectGoogleAccount,
+  loadGoogleAccounts,
+  listGoogleAccounts,
+  storeGoogleAccountMetadata,
+} from "../services/googleTokenService.js";
 
 export default function IntegrationsPage({ onShowToast }) {
-  // Ambil token dan email yang tersimpan di browser agar tidak hilang saat direfresh
-  const [connectedAccounts, setConnectedAccounts] = useState(() => {
-    const saved = localStorage.getItem("googleAccounts");
-    return saved ? JSON.parse(saved) : [];
-  });
-
+  const [connectedAccounts, setConnectedAccounts] = useState([]);
+  const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
   const [autoSyncEnabled, setAutoSyncEnabled] = useState(true);
-
-  // 🔥 State isConnecting ditambahkan kembali di sini
   const [isConnecting, setIsConnecting] = useState(false);
 
-  // Simpan ke local storage tiap kali akun bertambah/berkurang
   useEffect(() => {
-    localStorage.setItem("googleAccounts", JSON.stringify(connectedAccounts));
-  }, [connectedAccounts]);
+    let isCurrentRequest = true;
+    const loadAccounts = async () => {
+      try {
+        const { accounts, migrationFailures } = await loadGoogleAccounts();
+        if (!isCurrentRequest) return;
+        setConnectedAccounts(accounts);
+        if (migrationFailures > 0 && onShowToast) {
+          onShowToast(
+            "Sebagian akun lama perlu dihubungkan ulang agar token tersimpan aman di backend.",
+            "error",
+          );
+        }
+      } catch (error) {
+        console.error("Gagal memuat akun Google dari backend:", error);
+        if (isCurrentRequest && onShowToast) {
+          onShowToast(
+            "Gagal memuat akun Google Calendar dari backend.",
+            "error",
+          );
+        }
+      } finally {
+        if (isCurrentRequest) setIsLoadingAccounts(false);
+      }
+    };
 
-  // Logika Asli Popup Login Google
-  // Logika Baru Popup Login Google (Auth Code Flow untuk Refresh Token)
+    loadAccounts();
+    return () => {
+      isCurrentRequest = false;
+    };
+  }, []);
+
   const login = useGoogleLogin({
-    flow: "auth-code", // 🔥 KUNCI UTAMA: Meminta kode otorisasi, bukan sekadar token 1 jam
-    scope: "https://www.googleapis.com/auth/calendar.events",
+    flow: "auth-code",
+    scope: "openid email profile https://www.googleapis.com/auth/calendar.events",
+    prompt: "consent",
     onSuccess: async (codeResponse) => {
       try {
-        setIsConnecting(true); // Nyalakan loading saat proses tukar token
-
-        // 1. Tukar 'code' yang didapat dengan 'Refresh Token' permanen ke server Google
-        const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            code: codeResponse.code,
-            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID, // Pastikan nama env kamu sesuai
-            client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET, // 🔥 BUTUH INI DI .env LOKALMU
-            redirect_uri: "postmessage",
-            grant_type: "authorization_code",
-          }),
-        });
-
-        const tokens = await tokenRes.json();
-
-        if (!tokens.access_token) {
-          throw new Error("Gagal menukar kode otorisasi");
-        }
-
-        // 2. Ambil info email pengguna dari token baru
-        const userInfoRes = await fetch(
-          "https://www.googleapis.com/oauth2/v3/userinfo",
-          {
-            headers: { Authorization: `Bearer ${tokens.access_token}` },
-          },
+        setIsConnecting(true);
+        const { account: connectedAccount } = await connectGoogleAccount(
+          codeResponse.code,
         );
-        const userInfo = await userInfoRes.json();
-
-        // 3. Simpan data lengkap beserta REFRESH TOKEN
-        const newAccount = {
-          id: Date.now(),
-          email: userInfo.email,
-          name: userInfo.name || "Admin Studio",
-          role: "Primary Calendar",
-          accessToken: tokens.access_token, // Token 1 jam untuk dipakai saat ini juga
-          refreshToken: tokens.refresh_token, // 🔥 TOKEN PERMANEN: Simpan ini baik-baik!
-        };
-
-        setConnectedAccounts((prev) => [...prev, newAccount]);
-
+        const accounts = await listGoogleAccounts();
+        setConnectedAccounts(accounts);
+        storeGoogleAccountMetadata(accounts);
         if (onShowToast) {
           onShowToast(
-            `Akun ${userInfo.email} berhasil dihubungkan permanen!`,
+            `Akun ${connectedAccount.email} terhubung. Token disimpan aman di backend.`,
             "success",
           );
         }
       } catch (err) {
         console.error(err);
         if (onShowToast)
-          onShowToast("Gagal mengambil info akun Google.", "error");
+          onShowToast(
+            err.message || "Gagal menghubungkan akun Google.",
+            "error",
+          );
       } finally {
         setIsConnecting(false);
       }
@@ -92,10 +87,30 @@ export default function IntegrationsPage({ onShowToast }) {
     login(); // Panggil popup google login
   };
 
-  const handleDisconnect = (id, email) => {
-    setConnectedAccounts(connectedAccounts.filter((acc) => acc.id !== id));
-    if (onShowToast)
-      onShowToast(`Akun ${email} berhasil diputuskan.`, "success");
+  const handleDisconnect = async (email) => {
+    try {
+      const result = await disconnectGoogleAccount(email);
+      const accounts = connectedAccounts.filter(
+        (account) => account.email !== email,
+      );
+      setConnectedAccounts(accounts);
+      storeGoogleAccountMetadata(accounts);
+      if (onShowToast) {
+        onShowToast(
+          result.revoked
+            ? `Akun ${email} berhasil diputuskan.`
+            : `Akun ${email} dihapus dari aplikasi, tetapi akses Google mungkin masih perlu dicabut dari pengaturan akun Google.`,
+          result.revoked ? "success" : "error",
+        );
+      }
+    } catch (error) {
+      console.error("Gagal memutus akun Google:", error);
+      if (onShowToast)
+        onShowToast(
+          error.message || "Gagal memutus akun Google Calendar.",
+          "error",
+        );
+    }
   };
 
   const toggleAutoSync = () => {
@@ -173,7 +188,13 @@ export default function IntegrationsPage({ onShowToast }) {
             </h3>
           </div>
 
-          {connectedAccounts.length === 0 ? (
+          {isLoadingAccounts ? (
+            <div className="text-center py-8 bg-[#ffffff] rounded-xl border border-dashed border-[#d3c3be]">
+              <p className="text-sm text-[#504440] font-medium">
+                Memuat akun Google Calendar...
+              </p>
+            </div>
+          ) : connectedAccounts.length === 0 ? (
             <div className="text-center py-8 bg-[#ffffff] rounded-xl border border-dashed border-[#d3c3be]">
               <span className="material-symbols-outlined text-[32px] text-[#d3c3be] mb-2">
                 cloud_off
@@ -208,7 +229,7 @@ export default function IntegrationsPage({ onShowToast }) {
                     </span>
                     <button
                       type="button"
-                      onClick={() => handleDisconnect(acc.id, acc.email)}
+                      onClick={() => handleDisconnect(acc.email)}
                       className="text-xs font-semibold text-[#827470] hover:text-red-600 transition-colors cursor-pointer"
                     >
                       Disconnect
@@ -223,7 +244,7 @@ export default function IntegrationsPage({ onShowToast }) {
           <button
             type="button"
             onClick={handleConnectGoogle}
-            disabled={isConnecting}
+            disabled={isConnecting || isLoadingAccounts}
             className="mt-2 w-full sm:w-auto self-start inline-flex items-center gap-2 px-5 py-2.5 bg-[#ffffff] hover:bg-[#f6f3ee] text-[#090100] text-sm font-semibold rounded-xl border border-[#d3c3be] transition-colors cursor-pointer shadow-xs disabled:opacity-50"
           >
             <img
@@ -232,7 +253,11 @@ export default function IntegrationsPage({ onShowToast }) {
               className="w-4 h-4"
             />
             <span>
-              {isConnecting ? "Connecting..." : "Connect New Google Account"}
+              {isLoadingAccounts
+                ? "Loading connected accounts..."
+                : isConnecting
+                  ? "Connecting..."
+                  : "Connect New Google Account"}
             </span>
           </button>
         </div>

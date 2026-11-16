@@ -289,7 +289,7 @@ export default function ExpensesPage({
               <tr className="bg-[#f6f3ee] text-[#855230] text-xs uppercase tracking-wider border-b border-[#d3c3be]/40">
                 <th className="py-3 px-6 font-semibold">Tanggal</th>
                 <th className="py-3 px-6 font-semibold">Kategori</th>
-                <th className="py-3 px-6 font-semibold">Terkait Event</th>
+                <th className="py-3 px-6 font-semibold">Nama Event</th>
                 <th className="py-3 px-6 font-semibold">
                   Deskripsi / Peruntukan
                 </th>

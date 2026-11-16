@@ -30,7 +30,7 @@ export default function BookingSpecsCard({ booking }) {
         <div className="p-3.5 bg-[#f6f3ee] rounded-lg flex flex-col justify-between gap-2 border border-[#d3c3be]/20">
           <div className="flex flex-col gap-0.5">
             <span className="text-[11px] text-[#504440] uppercase tracking-wider font-semibold">
-              Durasi Booking
+              Booking Duration
             </span>
             <span className="text-sm text-[#090100] font-semibold">{booking.duration}</span>
           </div>
@@ -39,7 +39,7 @@ export default function BookingSpecsCard({ booking }) {
         <div className="p-3.5 bg-[#f6f3ee] rounded-lg flex flex-col justify-between gap-2 border border-[#d3c3be]/20">
           <div className="flex flex-col gap-0.5">
             <span className="text-[11px] text-[#504440] uppercase tracking-wider font-semibold">
-              Ukuran Kertas
+              Paper Type
             </span>
             <span className="text-sm text-[#090100] font-semibold">{booking.paperType}</span>
           </div>
@@ -54,6 +54,27 @@ export default function BookingSpecsCard({ booking }) {
           </div>
         </div>
       </div>
+      {booking.isProfitSharing && (
+        <div className="rounded-lg border border-[#855230]/20 bg-[#855230]/5 p-4">
+          <h3 className="text-xs text-[#855230] uppercase tracking-wider font-bold mb-3">
+            Skema Sharing Profit
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <span className="block text-[11px] text-[#504440]">Timelens</span>
+              <span className="text-lg text-[#090100] font-semibold">
+                {booking.timelensProfitPercentage ?? 0}%
+              </span>
+            </div>
+            <div>
+              <span className="block text-[11px] text-[#504440]">Client</span>
+              <span className="text-lg text-[#090100] font-semibold">
+                {booking.clientProfitPercentage ?? 0}%
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

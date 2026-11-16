@@ -1,9 +1,22 @@
 // src/services/calendarSync.js
 
-export const syncBookingToGoogleCalendar = async (booking, accessToken) => {
+import {
+  getGoogleAccessToken,
+  loadGoogleAccounts,
+} from "./googleTokenService.js";
+
+export const syncBookingToGoogleCalendar = async (booking) => {
   try {
     const status = (booking.status || "").toLowerCase();
-    if (status !== "confirmed" && status !== "fully paid") return false;
+    if (status !== "confirmed" && status !== "fully paid") {
+      return {
+        success: true,
+        skipped: true,
+        accountCount: 0,
+        failedCount: 0,
+        migrationFailures: 0,
+      };
+    }
 
     // 🕒 1. PEMBERSIH FORMAT TANGGAL (Memaksa jadi YYYY-MM-DD)
     const rawDate = booking.date || booking.eventDate || new Date();
@@ -53,7 +66,7 @@ export const syncBookingToGoogleCalendar = async (booking, accessToken) => {
       }).format(amount || 0);
 
     const event = {
-      summary: `Atelier: ${booking.eventName || booking.displayTitle || "Event Studio"}`,
+      summary: `${booking.eventName || booking.displayTitle || "Event Studio"}`,
       location: booking.venueName || booking.venueAddress || "-",
       description:
         `=== Info Klien ===\n` +
@@ -71,35 +84,67 @@ export const syncBookingToGoogleCalendar = async (booking, accessToken) => {
       end: { dateTime: end_time },
     };
 
-    // 🚀 3. TEMBAK API GOOGLE CALENDAR
-    const response = await fetch(
-      "https://www.googleapis.com/calendar/v3/calendars/primary/events",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(event),
-      },
+    const { accounts, migrationFailures } = await loadGoogleAccounts();
+    const results = await Promise.all(
+      accounts.map(async (account) => {
+        try {
+          let accessToken = await getGoogleAccessToken(account.email);
+          const calendarUrl =
+            "https://www.googleapis.com/calendar/v3/calendars/primary/events";
+          const sendEvent = () =>
+            fetch(calendarUrl, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(event),
+            });
+          let response = await sendEvent();
+
+          if (response.status === 401) {
+            accessToken = await getGoogleAccessToken(account.email);
+            response = await sendEvent();
+          }
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(
+              errorData.error?.message || "Gagal membuat event kalender.",
+            );
+          }
+
+          const data = await response.json();
+          console.log(
+            `✅ Event berhasil disinkronkan ke ${account.email}:`,
+            data.htmlLink,
+          );
+          return { success: true };
+        } catch (error) {
+          console.error(
+            `Auto-sync Google Calendar gagal untuk ${account.email}:`,
+            error.message,
+          );
+          return { success: false };
+        }
+      }),
     );
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("DETAIL ERROR DARI GOOGLE:", errorData);
-      throw new Error(
-        `Google API Error: ${errorData.error?.message || "Gagal membuat event"}`,
-      );
-    }
-
-    const data = await response.json();
-    console.log(
-      "✅ Event BERHASIL dibuat di Google Calendar! Link:",
-      data.htmlLink,
-    );
-    return true;
+    const failedCount = results.filter((result) => !result.success).length;
+    return {
+      success: accounts.length > 0 && failedCount === 0,
+      accountCount: accounts.length,
+      failedCount,
+      migrationFailures,
+    };
   } catch (error) {
     console.error("Auto-sync Google Calendar Error:", error.message);
-    return false;
+    return {
+      success: false,
+      accountCount: 0,
+      failedCount: 0,
+      migrationFailures: 0,
+      error: error.message,
+    };
   }
 };

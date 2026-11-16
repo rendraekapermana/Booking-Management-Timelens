@@ -1,6 +1,22 @@
 import { supabase } from "../lib/supabase.js";
 
 export const expenseService = {
+  getByBookingId: async (bookingId) => {
+    try {
+      const { data, error } = await supabase
+        .from("expenses")
+        .select("*")
+        .eq("booking_id", String(bookingId))
+        .order("date", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching booking expenses:", error);
+      throw error;
+    }
+  },
+
   // 1. Ambil semua data
   getAll: async () => {
     try {

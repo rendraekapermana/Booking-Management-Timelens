@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { formatDateID, parseCleanNumber } from "../lib/formatters.js";
 import Button from "../components/ui/Button.jsx";
 import { expenseService } from "../services/expenseService.js";
+import { bookingService } from "../services/bookingService.js";
 
 // Kategori bawaan (Standard) yang tidak bisa dihapus
 const DEFAULT_CATEGORIES = [
@@ -16,9 +17,14 @@ const DEFAULT_CATEGORIES = [
 export default function AddExpensePage({
   onNavigate,
   expenseToEdit,
+  bookingForExpense,
   onShowToast,
 }) {
   const [isSaving, setIsSaving] = useState(false);
+  const [eventSearch, setEventSearch] = useState("");
+  const [eventOptions, setEventOptions] = useState([]);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+  const [isEventDropdownOpen, setIsEventDropdownOpen] = useState(false);
 
   // 🔥 STATE UNTUK MANAJEMEN KATEGORI
   const [isCustomCategory, setIsCustomCategory] = useState(false);
@@ -40,12 +46,53 @@ export default function AddExpensePage({
     category: expenseToEdit ? expenseToEdit.category : DEFAULT_CATEGORIES[1],
     eventName: expenseToEdit
       ? expenseToEdit.eventname || expenseToEdit.eventName
-      : "",
+      : bookingForExpense?.eventName || "",
+    bookingId: expenseToEdit
+      ? expenseToEdit.booking_id || ""
+      : bookingForExpense?.id || "",
+    deductFromProfitSharing: expenseToEdit
+      ? expenseToEdit.deduct_from_profit_sharing !== false
+      : true,
     description: expenseToEdit ? expenseToEdit.description : "",
     amount: expenseToEdit ? String(expenseToEdit.amount) : "",
     paymentMethod: expenseToEdit ? expenseToEdit.paymentMethod : "Cash",
     notes: expenseToEdit ? expenseToEdit.notes : "",
   });
+
+  const handleCancel = () =>
+    onNavigate(
+      bookingForExpense ? "booking-detail" : "expenses",
+      bookingForExpense || null,
+    );
+
+  useEffect(() => {
+    let isCurrentRequest = true;
+    const search = eventSearch.trim();
+    const timeout = window.setTimeout(
+      async () => {
+        setIsLoadingEvents(true);
+        try {
+          const options = await bookingService.getExpenseEventOptions(search);
+          if (isCurrentRequest) setEventOptions(options);
+        } catch (error) {
+          console.error("Gagal memuat pilihan event:", error);
+          if (isCurrentRequest) {
+            setEventOptions([]);
+            if (onShowToast)
+              onShowToast("Gagal memuat daftar event.", "error");
+          }
+        } finally {
+          if (isCurrentRequest) setIsLoadingEvents(false);
+        }
+      },
+      search.length >= 2 ? 250 : 0,
+    );
+
+    return () => {
+      isCurrentRequest = false;
+      window.clearTimeout(timeout);
+    };
+  }, [eventSearch]);
 
   // Jika sedang mengedit, pastikan kategori lamanya masuk ke daftar custom (jika belum ada)
   useEffect(() => {
@@ -115,6 +162,8 @@ export default function AddExpensePage({
         dateFormatted: formattedDate,
         category: formData.category,
         eventName: formData.eventName || "-",
+        booking_id: formData.bookingId ? String(formData.bookingId) : null,
+        deduct_from_profit_sharing: formData.deductFromProfitSharing,
         description: formData.description,
         amount: cleanAmount,
       };
@@ -130,7 +179,10 @@ export default function AddExpensePage({
           );
       }
 
-      onNavigate("expenses");
+      onNavigate(
+        bookingForExpense ? "booking-detail" : "expenses",
+        bookingForExpense || null,
+      );
     } catch (error) {
       console.error("Gagal menyimpan data:", error);
       if (onShowToast)
@@ -147,7 +199,7 @@ export default function AddExpensePage({
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => onNavigate("expenses")}
+            onClick={handleCancel}
             className="text-xs uppercase tracking-wider text-[#855230] hover:text-[#090100] transition-colors cursor-pointer"
           >
             Expenses
@@ -318,17 +370,136 @@ export default function AddExpensePage({
                 <span className="material-symbols-outlined text-[15px] text-[#855230]">
                   celebration
                 </span>{" "}
-                Terkait Booking / Event Photobooth
+                Nama Event
               </label>
-              <input
-                type="text"
-                placeholder="e.g. Wedding Sarah & Dimas (The Glass House)"
-                value={formData.eventName}
-                onChange={(e) =>
-                  setFormData({ ...formData, eventName: e.target.value })
-                }
-                className="w-full bg-[#f6f3ee] rounded-lg px-3.5 py-2.5 text-sm text-[#090100] border border-[#d3c3be]/40 outline-none focus:border-[#855230]"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  role="combobox"
+                  aria-expanded={isEventDropdownOpen}
+                  aria-controls="expense-event-options"
+                  autoComplete="off"
+                  placeholder="Cari atau pilih nama event..."
+                  value={
+                    isEventDropdownOpen ? eventSearch : formData.eventName
+                  }
+                  onFocus={() => {
+                    setEventSearch("");
+                    setIsEventDropdownOpen(true);
+                  }}
+                  onChange={(e) => {
+                    setEventSearch(e.target.value);
+                    setFormData({
+                      ...formData,
+                      eventName: "",
+                      bookingId: "",
+                    });
+                    setIsEventDropdownOpen(true);
+                  }}
+                  onBlur={() =>
+                    window.setTimeout(
+                      () => setIsEventDropdownOpen(false),
+                      120,
+                    )
+                  }
+                  className="w-full bg-[#f6f3ee] rounded-lg px-3.5 py-2.5 pr-10 text-sm text-[#090100] border border-[#d3c3be]/40 outline-none focus:border-[#855230]"
+                />
+                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[18px] text-[#827470] pointer-events-none">
+                  expand_more
+                </span>
+                {isEventDropdownOpen && (
+                  <div
+                    id="expense-event-options"
+                    role="listbox"
+                    className="absolute z-20 mt-1 w-full max-h-64 overflow-y-auto rounded-lg border border-[#d3c3be]/60 bg-white shadow-lg"
+                  >
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={!formData.eventName}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        setFormData({
+                          ...formData,
+                          eventName: "",
+                          bookingId: "",
+                        });
+                        setEventSearch("");
+                        setIsEventDropdownOpen(false);
+                      }}
+                      className="w-full px-3.5 py-2.5 text-left text-xs text-[#504440] hover:bg-[#f6f3ee]"
+                    >
+                      Tidak terkait event
+                    </button>
+                    {isLoadingEvents ? (
+                      <p className="px-3.5 py-3 text-xs text-[#827470]">
+                        Memuat event...
+                      </p>
+                    ) : eventOptions.length > 0 ? (
+                      eventOptions.map((event) => (
+                        <button
+                          key={event.id}
+                          type="button"
+                          role="option"
+                          aria-selected={formData.eventName === event.eventName}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            setFormData({
+                              ...formData,
+                              eventName: event.eventName,
+                              bookingId: String(event.id),
+                            });
+                            setEventSearch("");
+                            setIsEventDropdownOpen(false);
+                          }}
+                          className="w-full border-t border-[#f0ede9] px-3.5 py-2.5 text-left hover:bg-[#f6f3ee]"
+                        >
+                          <span className="block text-xs font-semibold text-[#090100]">
+                            {event.eventName}
+                          </span>
+                          <span className="mt-1 block text-[11px] text-[#827470]">
+                            {[formatDateID(event.date), event.customerName, event.venueName]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </span>
+                        </button>
+                      ))
+                    ) : (
+                      <p className="px-3.5 py-3 text-xs text-[#827470]">
+                        {eventSearch.trim().length >= 2
+                          ? "Event tidak ditemukan. Coba kata kunci lain."
+                          : "Tidak ada event untuk bulan ini dan bulan berikutnya."}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+              <p className="text-[11px] text-[#827470]">
+                Menampilkan event bulan ini dan bulan berikutnya. Ketik minimal
+                2 karakter untuk mencari semua event, termasuk event lama.
+              </p>
+              {formData.bookingId && (
+                <label className="flex items-start gap-2 rounded-lg border border-[#d3c3be]/40 bg-[#fcf9f4] p-3 text-xs text-[#504440]">
+                  <input
+                    type="checkbox"
+                    checked={formData.deductFromProfitSharing}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        deductFromProfitSharing: e.target.checked,
+                      })
+                    }
+                    className="mt-0.5 accent-[#855230]"
+                  />
+                  <span>
+                    <span className="block font-semibold text-[#090100]">
+                      Kurangi laba sebelum dibagi
+                    </span>
+                    Biaya ini akan mengurangi laba bersih pada ringkasan bagi
+                    hasil event.
+                  </span>
+                </label>
+              )}
             </div>
 
             {/* Deskripsi */}
@@ -381,7 +552,7 @@ export default function AddExpensePage({
               <Button
                 variant="outline"
                 type="button"
-                onClick={() => onNavigate("expenses")}
+                onClick={handleCancel}
                 disabled={isSaving}
               >
                 Batal

@@ -236,7 +236,7 @@ test("register, manage a booking, and visit the studio workflows", async ({
       page.getByRole("heading", { name: "Create Your Account" }),
     ).toBeVisible();
 
-    await page.getByPlaceholder("Natasya Mareta").fill("E2E Studio Owner");
+    await page.getByPlaceholder("Sarah Natasha").fill("E2E Studio Owner");
     await page.getByPlaceholder("curator@timelens.com").fill(
       `e2e-${Date.now()}@timelens.test`,
     );
@@ -278,6 +278,10 @@ test("register, manage a booking, and visit the studio workflows", async ({
     await page.getByPlaceholder("Contoh: Pernikahan Sarah & Dimas").fill(
       "E2E Booking",
     );
+    await page.getByText("Others", { exact: true }).click();
+    await page.getByPlaceholder("Sebutkan jenis acara lainnya").fill(
+      "E2E Event Type",
+    );
     await page.locator('input[type="date"]').fill(futureDate());
     await page.getByPlaceholder("18:00 - 22:00").fill("18:00 - 22:00");
     await page
@@ -303,6 +307,17 @@ test("register, manage a booking, and visit the studio workflows", async ({
       page.getByRole("heading", { name: "Reservasi Diterima" }),
     ).toBeVisible();
     expect(bookings).toHaveLength(1);
+    expect(bookings[0].service_type).toBe("E2E Booking");
+    expect(bookings[0].event_type).toBe("E2E Event Type");
+    const whatsappUrl = await page
+      .getByRole("link", { name: "Konfirmasi via WhatsApp" })
+      .getAttribute("href");
+    expect(new URL(whatsappUrl).searchParams.get("text")).toContain(
+      "E2E Booking",
+    );
+    expect(new URL(whatsappUrl).searchParams.get("text")).not.toContain(
+      "E2E Event Type",
+    );
   });
 
   await test.step("review the order and record its payment", async () => {
@@ -322,6 +337,9 @@ test("register, manage a booking, and visit the studio workflows", async ({
 
     await expect(
       page.getByRole("heading", { name: "E2E Booking" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("E2E Event Type", { exact: true }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Record Payment" }).click();
     await expect(
@@ -387,4 +405,23 @@ test("register, manage a booking, and visit the studio workflows", async ({
   });
 
   expect(errors).toEqual([]);
+});
+
+test("public booking is available without login while studio routes stay protected", async ({
+  page,
+}) => {
+  await page.route("**/rest/v1/bookings**", (route) =>
+    fulfillJson(route, []),
+  );
+
+  await page.goto("/#book/main-atelier");
+  await expect(
+    page.getByRole("heading", { name: "Formulir Reservasi Timelens" }),
+  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Sign In" })).toHaveCount(0);
+
+  await page.evaluate(() => {
+    window.location.hash = "dashboard";
+  });
+  await expect(page.getByRole("heading", { name: "Sign In" })).toBeVisible();
 });

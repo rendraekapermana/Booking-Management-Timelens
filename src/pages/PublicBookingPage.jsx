@@ -10,6 +10,7 @@ import {
   SectionB,
   SectionC,
   SectionD,
+  ProfitSharingSection,
   OrderSummary,
 } from "../components/booking/BookingFormSections.jsx";
 
@@ -24,6 +25,7 @@ export default function PublicBookingPage({
     clientPhone: "",
     eventName: "",
     eventType: "Wedding",
+    otherEventType: "",
     eventDate: "",
     eventTime: "",
     duration: "4 Jam",
@@ -37,6 +39,9 @@ export default function PublicBookingPage({
     transferAmount: "",
     proofUrl: null,
     uploadedFileName: null,
+    isProfitSharing: false,
+    timelensProfitPercentage: "",
+    clientProfitPercentage: "",
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -58,14 +63,39 @@ export default function PublicBookingPage({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (
       !formData.clientName ||
+      !formData.eventName ||
       !formData.venueDetail ||
       !formData.venueAddress ||
-      !formData.proofUrl
+      (!formData.isProfitSharing && !formData.proofUrl)
     ) {
       return onShowToast(
-        "Mohon lengkapi alamat detail, titik peta, dan unggah bukti transfer",
+        formData.isProfitSharing
+          ? "Mohon lengkapi nama acara, alamat detail, dan titik peta"
+          : "Mohon lengkapi nama acara, alamat detail, titik peta, dan unggah bukti transfer",
+        "error",
+      );
+    }
+
+    const timelensProfitPercentage = Number(
+      formData.timelensProfitPercentage,
+    );
+    const clientProfitPercentage = Number(formData.clientProfitPercentage);
+    if (
+      formData.isProfitSharing &&
+      (formData.timelensProfitPercentage === "" ||
+        formData.clientProfitPercentage === "" ||
+        timelensProfitPercentage < 0 ||
+        timelensProfitPercentage > 100 ||
+        clientProfitPercentage < 0 ||
+        clientProfitPercentage > 100 ||
+        Math.abs(timelensProfitPercentage + clientProfitPercentage - 100) >
+          0.01)
+    ) {
+      return onShowToast(
+        "Persentase Timelens dan client harus berjumlah 100%",
         "error",
       );
     }
@@ -74,6 +104,10 @@ export default function PublicBookingPage({
 
     const newBookingPayload = {
       eventName: formData.eventName,
+      eventType:
+        formData.eventType === "Others"
+          ? formData.otherEventType
+          : formData.eventType,
       customerName: formData.clientName,
       customer_email: formData.clientEmail,
       customer_phone: formData.clientPhone,
@@ -87,10 +121,19 @@ export default function PublicBookingPage({
       frame_design: formData.designFrame,
       backdrop: formData.backdrop,
       paperType: formData.paperType,
-      totalPrice: grandTotal,
-      downPayment: parseInt(formData.transferAmount.replace(/\D/g, "")) || 0,
+      isProfitSharing: formData.isProfitSharing,
+      timelensProfitPercentage: formData.isProfitSharing
+        ? timelensProfitPercentage
+        : null,
+      clientProfitPercentage: formData.isProfitSharing
+        ? clientProfitPercentage
+        : null,
+      totalPrice: formData.isProfitSharing ? 0 : grandTotal,
+      downPayment: formData.isProfitSharing
+        ? 0
+        : parseInt(formData.transferAmount.replace(/\D/g, "")) || 0,
       status: "Pending",
-      uploaded_file_name: formData.proofUrl,
+      uploaded_file_name: formData.isProfitSharing ? null : formData.proofUrl,
     };
 
     try {
@@ -98,6 +141,7 @@ export default function PublicBookingPage({
       onShowToast("Reservasi berhasil dikirim dan disinkronkan ke database!");
       setShowModal(true);
     } catch (error) {
+      console.error("Supabase Error:", error);
       onShowToast("Gagal menyimpan reservasi ke database.", "error");
     }
   };
@@ -148,13 +192,19 @@ export default function PublicBookingPage({
                 setFormData={setFormData}
                 transportFee={transportFee}
               />
-              <SectionC formData={formData} setFormData={setFormData} />
-              <SectionD
+              <ProfitSharingSection
                 formData={formData}
                 setFormData={setFormData}
-                handleCopyAccount={handleCopyAccount}
-                onShowToast={onShowToast}
               />
+              <SectionC formData={formData} setFormData={setFormData} />
+              {!formData.isProfitSharing && (
+                <SectionD
+                  formData={formData}
+                  setFormData={setFormData}
+                  handleCopyAccount={handleCopyAccount}
+                  onShowToast={onShowToast}
+                />
+              )}
             </div>
 
             <div className="lg:col-span-5 flex flex-col gap-5 lg:sticky lg:top-28">
@@ -197,7 +247,7 @@ export default function PublicBookingPage({
               </span>
             </div>
 
-            {/* Tombol WhatsApp menggunakan Nama Acara sebagai pengganti Ref Number */}
+            {/* Tombol WhatsApp */}
             <a
               href={`https://wa.me/628159088814?text=${encodeURIComponent(
                 `Halo Timelens, saya ${formData.clientName} baru saja melakukan reservasi photobooth via website untuk acara *${formData.eventName || "Acara"}*. Mohon verifikasi pemesanan saya. Terima kasih!`,

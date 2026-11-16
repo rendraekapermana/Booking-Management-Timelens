@@ -85,7 +85,7 @@ export default function RegisterForm({
           onChange={(e) =>
             setFormData({ ...formData, fullName: e.target.value })
           }
-          placeholder="Natasya Mareta"
+          placeholder="Sarah Natasha"
           className="w-full px-4 py-3 bg-[#f6f3ee] border border-[#d3c3be]/40 rounded-lg text-sm text-[#2c1810] focus:outline-none focus:border-[#2c1810] transition-colors"
         />
       </div>

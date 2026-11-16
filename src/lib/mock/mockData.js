@@ -526,8 +526,16 @@ export const pricingOptions = {
       name: "Velvet Green",
     },
     {
+      id: "velvet_PINK",
+      name: "Velvet Pink",
+    },
+    {
       id: "velvet_blue",
       name: "Velvet Blue",
+    },
+    {
+      id: "manogani",
+      name: "Manogani",
     },
     {
       id: "client_backdrop",
@@ -549,6 +557,10 @@ export const defaultInvoiceSettings = {
   bankName: "Bank Central Asia (BCA)",
   accountNum: "883-092-1144",
   accountName: "PT Timelens Kreasi Abadi",
+  bankName2: "JAGO",
+  accountNum2: "8830492110",
+  bankName3: "MANDIRI",
+  accountNum3: "1640003054543",
   paymentInstruction: "Harap sertakan kode booking / nama klien pada berita transfer & konfirmasi via WhatsApp.",
   termsConditions: `1. Uang muka (DP) tidak dapat dikembalikan jika terjadi pembatalan sepihak.\n2. Pelunasan wajib diselesaikan maksimal H-3 sebelum hari pelaksanaan acara photobooth.\n3. Pihak Timelens Photobooth Atelier berhak mengatur jadwal setup booth 2 jam sebelum acara dimulai.`,
   footerNote: "Terima kasih telah mempercayakan momen berharga Anda bersama Timelens Photobooth Atelier.",
@@ -563,8 +575,7 @@ export const defaultInvoiceSettings = {
   handoverClauses: `1. Kwitansi ini merupakan bukti sah pelunasan biaya sewa photobooth Timelens Atelier.\n2. Soft file foto high-resolution akan diunggah ke Timelens Archival Cloud maksimal 2x24 jam setelah acara selesai.\n3. Master photo strips fisik asli diserahkan kepada perwakilan PIC / Wedding Organizer pada saat closing booth.\n4. Tim photobooth berhak menolak pembongkaran dini tanpa konfirmasi pihak berwenang di lokasi.`,
   whatsappGatewayConnected: true,
   whatsappTemplates: {
-    dp: `Yth. *{nama_klien}*,\n\nTerima kasih atas reservasi photobooth atelier bersama *Timelens Photobooth Atelier*.\n\nBerikut ringkasan faktur pemesanan Anda:\n• No. Faktur: *{no_invoice}*\n• Total Investasi: *{total_tagihan}*\n• Nominal DP (50%): *{nominal_dp}*\n• Batas Waktu: *{jatuh_tempo}*\n\nPembayaran dapat disalurkan melalui transfer ke:\n*{nama_bank}* : *{nomor_rekening}*\na/n PT Timelens Kreasi Abadi\n\nTinjau detail reservasi dan unduh invoice resmi Anda di:\n{link_invoice}\n\nSalam hangat,\n*Tim Concierge Timelens Atelier*`,
     receipt: `Yth. *{nama_klien}*,\n\nTerima kasih. Pembayaran pelunasan untuk tagihan *{no_invoice}* telah kami terima dengan sempurna.\n\n• Status: *LUNAS (Paid in Full)*\n• Total Terbayar: *{total_tagihan}*\n• Saldo Sisa: *Rp 0*\n\nKwitansi digital resmi bercap tanda atelier telah terbit dan dapat diunduh pada tautan berikut:\n{link_kwitansi}\n\nKoleksi potret dan tim operator kami siap menghidupkan momentum berharga Anda.\n\nSalam hangat,\n*Tim Concierge Timelens Atelier*`,
-    reminder: `Yth. *{nama_klien}*,\n\nMenyapa Anda dengan hangat dari *Timelens Atelier*.\n\nIni merupakan pengingat ramah bahwa sesi instalasi photobooth untuk perhelatan istimewa Anda akan berlangsung dalam *3 hari ke depan*.\n\n• No. Reservasi: *{no_invoice}*\n• Status Pembayaran: *Terkonfirmasi*\n\nJika ada koordinasi teknis panggung atau penyesuaian backdrop di lokasi, tim kami siap mendampingi melalui WhatsApp ini.\n\nSalam hormat,\n*Tim Concierge Timelens Atelier*`
+    reminder: `Yth. *{nama_klien}*,\n\nMenyapa Anda dengan hangat dari *Timelens Atelier*.\n\nIni merupakan pengingat ramah bahwa acara Anda akan berlangsung dalam *5 hari lagi*.\n\n• No. Reservasi: *{no_invoice}*\n• Status Pembayaran: *Terkonfirmasi*\n\nJika ada koordinasi teknis lokasi atau penyesuaian kebutuhan acara, tim kami siap mendampingi melalui WhatsApp ini.\n\nSalam hormat,\n*Tim Concierge Timelens Atelier*`
   }
 };

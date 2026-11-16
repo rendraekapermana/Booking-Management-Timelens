@@ -11,7 +11,7 @@ export default function InvoiceSettingsPage({ onNavigate, onShowToast }) {
   const [activeTab, setActiveTab] = useState("invoice");
   const [settings, setSettings] = useState(defaultInvoiceSettings);
   const [isLoading, setIsLoading] = useState(true);
-  const [whatsappTemplateKey, setWhatsappTemplateKey] = useState("dp");
+  const [whatsappTemplateKey, setWhatsappTemplateKey] = useState("reminder");
   const [currentWhatsappText, setCurrentWhatsappText] = useState("");
 
   useEffect(() => {
@@ -21,8 +21,8 @@ export default function InvoiceSettingsPage({ onNavigate, onShowToast }) {
         const merged = { ...defaultInvoiceSettings, ...dbSettings };
         setSettings(merged);
         setCurrentWhatsappText(
-          merged.whatsappTemplates?.dp ||
-            defaultInvoiceSettings.whatsappTemplates.dp,
+          merged.whatsappTemplates?.reminder ||
+            defaultInvoiceSettings.whatsappTemplates.reminder,
         );
       } catch (error) {
         console.error("Gagal load settings:", error);
@@ -35,7 +35,12 @@ export default function InvoiceSettingsPage({ onNavigate, onShowToast }) {
 
   const handleSwitchWhatsappTemplate = (newKey) => {
     const updatedTemplates = {
-      ...settings.whatsappTemplates,
+      receipt:
+        settings.whatsappTemplates?.receipt ||
+        defaultInvoiceSettings.whatsappTemplates.receipt,
+      reminder:
+        settings.whatsappTemplates?.reminder ||
+        defaultInvoiceSettings.whatsappTemplates.reminder,
       [whatsappTemplateKey]: currentWhatsappText,
     };
     setSettings((prev) => ({
@@ -65,7 +70,8 @@ export default function InvoiceSettingsPage({ onNavigate, onShowToast }) {
       const payload = {
         ...settings,
         whatsappTemplates: {
-          ...settings.whatsappTemplates,
+          receipt: settings.whatsappTemplates?.receipt,
+          reminder: settings.whatsappTemplates?.reminder,
           [whatsappTemplateKey]: currentWhatsappText,
         },
       };
@@ -183,15 +189,10 @@ export default function InvoiceSettingsPage({ onNavigate, onShowToast }) {
       )}
       {activeTab === "whatsapp" && (
         <WhatsAppGatewayTab
-          settings={settings}
           currentKey={whatsappTemplateKey}
           onSelectKey={handleSwitchWhatsappTemplate}
           currentText={currentWhatsappText}
           onChangeText={handleWhatsappTextChange}
-          onSendTest={() =>
-            onShowToast &&
-            onShowToast("Pesan uji coba terkirim ke WhatsApp Concierge")
-          }
         />
       )}
 
@@ -201,7 +202,7 @@ export default function InvoiceSettingsPage({ onNavigate, onShowToast }) {
             info
           </span>
           <span>
-            Perubahan berlaku otomatis pada generasi dokumen baru.
+            Simpan perubahan untuk menerapkan template pesan. Pengiriman otomatis H-5 belum aktif.
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -210,7 +211,7 @@ export default function InvoiceSettingsPage({ onNavigate, onShowToast }) {
             onClick={() => {
               setSettings(defaultInvoiceSettings);
               setCurrentWhatsappText(
-                defaultInvoiceSettings.whatsappTemplates.dp,
+                defaultInvoiceSettings.whatsappTemplates.reminder,
               );
               if (onShowToast)
                 onShowToast("Pengaturan dikembalikan ke default.", "info");

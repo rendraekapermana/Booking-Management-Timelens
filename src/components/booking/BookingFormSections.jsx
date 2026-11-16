@@ -14,7 +14,7 @@ export const SectionA = ({ formData, setFormData }) => (
         </div>
         <div>
           <h2 className="text-base text-[#090100] font-serif font-bold">
-            A. Informasi Klien &amp; Kontak (PIC)
+            Informasi Klien &amp; Kontak (PIC)
           </h2>
           <p className="text-xs text-[#504440]">
             Data penanggung jawab pemesanan &amp; koordinasi acara.
@@ -79,7 +79,7 @@ export const SectionB = ({ formData, setFormData, transportFee }) => (
         </div>
         <div>
           <h2 className="text-base text-[#090100] font-serif font-bold">
-            B. Detail Acara &amp; Venue
+            Detail Acara &amp; Venue
           </h2>
           <p className="text-xs text-[#504440]">
             Jadwal operasional, alamat lokasi, dan titik peta.
@@ -120,6 +120,20 @@ export const SectionB = ({ formData, setFormData, transportFee }) => (
             </label>
           ))}
         </div>
+        {formData.eventType === "Others" && (
+          <input
+            type="text"
+            required
+            autoFocus
+            placeholder="Sebutkan jenis acara lainnya"
+            aria-label="Jenis acara lainnya"
+            value={formData.otherEventType || ""}
+            onChange={(e) =>
+              setFormData({ ...formData, otherEventType: e.target.value })
+            }
+            className="w-full bg-[#f6f3ee] px-4 py-2.5 rounded-lg text-sm border focus:bg-[#ffffff] focus:border-[#855230]"
+          />
+        )}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="flex flex-col gap-1.5">
@@ -214,7 +228,7 @@ export const SectionC = ({ formData, setFormData }) => (
         </div>
         <div>
           <h2 className="text-base text-[#090100] font-serif font-bold">
-            C. Spesifikasi Photobooth
+            Spesifikasi Photobooth
           </h2>
         </div>
       </div>
@@ -267,6 +281,105 @@ export const SectionC = ({ formData, setFormData }) => (
   </section>
 );
 
+export const ProfitSharingSection = ({ formData, setFormData }) => (
+  <section className="bg-[#ffffff] rounded-xl p-6 sm:p-7 shadow-xs border border-[#d3c3be]/30 flex flex-col gap-5">
+    <div className="flex items-center gap-3 border-b border-[#d3c3be]/30 pb-4">
+      <div className="w-8 h-8 rounded-full bg-[#855230]/10 text-[#855230] flex items-center justify-center">
+        <span className="material-symbols-outlined text-[18px]">payments</span>
+      </div>
+      <div>
+        <h2 className="text-base text-[#090100] font-serif font-bold">
+          Skema Pembayaran
+        </h2>
+        <p className="text-xs text-[#504440]">
+          Pilih sewa biasa atau kerja sama dengan pembagian profit.
+        </p>
+      </div>
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {[
+        { value: false, title: "Sewa biasa", description: "Bayar sesuai harga paket." },
+        {
+          value: true,
+          title: "Sharing profit",
+          description: "Tanpa biaya sewa/DP di formulir.",
+        },
+      ].map((option) => (
+        <label
+          key={String(option.value)}
+          className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer ${
+            formData.isProfitSharing === option.value
+              ? "border-[#855230] bg-[#855230]/5"
+              : "border-[#d3c3be]/40 bg-[#f6f3ee]"
+          }`}
+        >
+          <input
+            type="radio"
+            name="paymentScheme"
+            checked={formData.isProfitSharing === option.value}
+            onChange={() =>
+              setFormData({ ...formData, isProfitSharing: option.value })
+            }
+            className="mt-0.5 accent-[#855230]"
+          />
+          <span>
+            <span className="block text-sm font-semibold text-[#090100]">
+              {option.title}
+            </span>
+            <span className="block text-xs text-[#504440] mt-1">
+              {option.description}
+            </span>
+          </span>
+        </label>
+      ))}
+    </div>
+    {formData.isProfitSharing && (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold">Bagian Timelens (%) *</label>
+          <input
+            type="number"
+            required
+            min="0"
+            max="100"
+            step="0.01"
+            value={formData.timelensProfitPercentage}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                timelensProfitPercentage: e.target.value,
+              })
+            }
+            className="w-full bg-[#f6f3ee] px-4 py-2.5 rounded-lg text-sm border focus:bg-[#ffffff]"
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold">Bagian Client (%) *</label>
+          <input
+            type="number"
+            required
+            min="0"
+            max="100"
+            step="0.01"
+            value={formData.clientProfitPercentage}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                clientProfitPercentage: e.target.value,
+              })
+            }
+            className="w-full bg-[#f6f3ee] px-4 py-2.5 rounded-lg text-sm border focus:bg-[#ffffff]"
+          />
+        </div>
+        <p className="sm:col-span-2 text-xs text-[#855230]">
+          Total pembagian harus 100%. Formulir ini tidak meminta biaya sewa,
+          DP, atau bukti transfer untuk skema sharing profit.
+        </p>
+      </div>
+    )}
+  </section>
+);
+
 export const SectionD = ({
   formData,
   setFormData,
@@ -283,7 +396,7 @@ export const SectionD = ({
         </div>
         <div>
           <h2 className="text-base text-[#090100] font-serif font-bold">
-            D. Pembayaran &amp; Bukti
+            Pembayaran &amp; Bukti
           </h2>
         </div>
       </div>
@@ -291,14 +404,16 @@ export const SectionD = ({
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div className="p-4 rounded-xl bg-[#f6f3ee] border flex justify-between items-center">
         <div>
-          <span className="text-[11px] font-semibold text-[#504440] block">
-            BCA Resmi
+          <span className="text-[18px] font-bold text-[#504440] block">
+            BCA
           </span>
-          <span className="font-bold">8830-492-110</span>
+          <span className="font-bold">4971870529</span>
+          <br />
+          <span className="text-[14px] font-light">A.N Elfridha Shafwatunnisa</span>
         </div>
         <button
           type="button"
-          onClick={() => handleCopyAccount("8830492110")}
+          onClick={() => handleCopyAccount("4971870529")}
           className="px-2 py-1 text-xs bg-[#ebe8e3] rounded"
         >
           Salin
@@ -306,14 +421,33 @@ export const SectionD = ({
       </div>
       <div className="p-4 rounded-xl bg-[#f6f3ee] border flex justify-between items-center">
         <div>
-          <span className="text-[11px] font-semibold text-[#504440] block">
-            Mandiri
+          <span className="text-[18px] font-bold text-[#504440] block">
+            JAGO
           </span>
-          <span className="font-bold">122-00-1988234-1</span>
+          <span className="font-bold">108818103224</span>
+          <br />
+          <span className="text-[14px] font-light">A.N Elfridha Shafwatunnisa</span>
         </div>
         <button
           type="button"
-          onClick={() => handleCopyAccount("1220019882341")}
+          onClick={() => handleCopyAccount("108818103224")}
+          className="px-2 py-1 text-xs bg-[#ebe8e3] rounded"
+        >
+          Salin
+        </button>
+      </div>
+      <div className="p-4 rounded-xl bg-[#f6f3ee] border flex justify-between items-center">
+        <div>
+          <span className="text-[18px] font-bold text-[#504440] block">
+            MANDIRI
+          </span>
+          <span className="font-bold">1640003054543</span>
+          <br />
+          <span className="text-[14px] font-light">A.N Elfridha Shafwatunnisa</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => handleCopyAccount("1640003054543")}
           className="px-2 py-1 text-xs bg-[#ebe8e3] rounded"
         >
           Salin
@@ -395,38 +529,61 @@ export const OrderSummary = ({
         </div>
       </div>
     </div>
-    <div className="flex flex-col gap-2.5 text-xs mt-1">
-      <div className="flex justify-between py-1 border-b">
-        <span className="text-[#504440]">Paket ({formData.duration})</span>
-        <span className="font-semibold text-[#090100]">
-          {formatIDR(basePrice)}
-        </span>
-      </div>
-      {transportFee > 0 && (
-        <div className="flex justify-between py-1 border-b">
-          <span className="text-[#855230]">Biaya Transport Luar Kota</span>
-          <span className="font-semibold text-[#855230]">
-            {formatIDR(transportFee)}
+    {formData.isProfitSharing ? (
+      <div className="flex flex-col gap-2.5 text-xs bg-[#855230]/5 rounded-lg p-4 border border-[#855230]/20">
+        <span className="font-semibold text-[#855230]">Skema sharing profit</span>
+        <div className="flex justify-between">
+          <span className="text-[#504440]">Timelens</span>
+          <span className="font-semibold">
+            {formData.timelensProfitPercentage || 0}%
           </span>
         </div>
-      )}
-      <div className="flex justify-between py-1 border-b bg-[#855230]/5 px-2 rounded">
-        <span className="text-[#855230] font-semibold">Minimum DP (50%)</span>
-        <span className="font-semibold text-[#855230]">
-          {formatIDR(grandTotal * 0.5)}
-        </span>
+        <div className="flex justify-between py-1 border-b">
+          <span className="text-[#504440]">Client</span>
+          <span className="font-semibold">
+            {formData.clientProfitPercentage || 0}%
+          </span>
+        </div>
+        <p className="text-[#504440]">
+          Tidak ada biaya sewa atau DP yang ditagihkan melalui formulir ini.
+        </p>
       </div>
-    </div>
-    <div className="flex flex-col gap-1.5 mt-2">
-      <div className="flex justify-between items-baseline">
-        <span className="text-base font-serif font-bold">
-          Total Biaya
-        </span>
-        <span className="text-2xl font-serif font-bold text-[#855230]">
-          {formatIDR(grandTotal)}
-        </span>
-      </div>
-    </div>
+    ) : (
+      <>
+        <div className="flex flex-col gap-2.5 text-xs mt-1">
+          <div className="flex justify-between py-1 border-b">
+            <span className="text-[#504440]">Paket ({formData.duration})</span>
+            <span className="font-semibold text-[#090100]">
+              {formatIDR(basePrice)}
+            </span>
+          </div>
+          {transportFee > 0 && (
+            <div className="flex justify-between py-1 border-b">
+              <span className="text-[#855230]">Biaya Transport Luar Kota</span>
+              <span className="font-semibold text-[#855230]">
+                {formatIDR(transportFee)}
+              </span>
+            </div>
+          )}
+          <div className="flex justify-between py-1 border-b bg-[#855230]/5 px-2 rounded">
+            <span className="text-[#855230] font-semibold">
+              Minimum DP (50%)
+            </span>
+            <span className="font-semibold text-[#855230]">
+              {formatIDR(grandTotal * 0.5)}
+            </span>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1.5 mt-2">
+          <div className="flex justify-between items-baseline">
+            <span className="text-base font-serif font-bold">Total Biaya</span>
+            <span className="text-2xl font-serif font-bold text-[#855230]">
+              {formatIDR(grandTotal)}
+            </span>
+          </div>
+        </div>
+      </>
+    )}
     <button
       type="submit"
       className="w-full mt-2 py-3.5 bg-[#2c1810] hover:bg-[#090100] text-[#fcf9f4] text-sm font-semibold rounded-lg shadow-sm"

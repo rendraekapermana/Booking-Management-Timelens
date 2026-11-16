@@ -73,14 +73,16 @@ export default function DocumentToolbar({
           >
             Cetak / PDF
           </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            icon="send"
-            onClick={onSendWhatsapp}
-          >
-            Kirim WhatsApp
-          </Button>
+          {onSendWhatsapp && (
+            <Button
+              variant="primary"
+              size="sm"
+              icon="send"
+              onClick={onSendWhatsapp}
+            >
+              Kirim WhatsApp
+            </Button>
+          )}
         </div>
       </div>
     </div>

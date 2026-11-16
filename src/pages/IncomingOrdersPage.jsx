@@ -64,24 +64,30 @@ export default function IncomingOrdersPage({ onNavigate, onShowToast }) {
 
       // Pemicu Google Calendar Sync
       if (newStatus === "Confirmed" || newStatus === "Fully Paid") {
-        const savedAccounts = JSON.parse(
-          localStorage.getItem("googleAccounts") || "[]",
-        );
-        if (savedAccounts.length > 0) {
-          savedAccounts.forEach(async (acc) => {
-            const success = await syncBookingToGoogleCalendar(
-              updatedData,
-              acc.accessToken,
-            );
-            if (success) console.log(`✅ Sinkronisasi sukses ke: ${acc.email}`);
-          });
+        const syncResult = await syncBookingToGoogleCalendar(updatedData);
+        if (syncResult.error) {
+          onShowToast(
+            `Status diperbarui, tetapi sinkronisasi Google Calendar gagal: ${syncResult.error}`,
+            "error",
+          );
+        } else if (syncResult.migrationFailures > 0) {
+          onShowToast(
+            "Status diperbarui, tetapi sebagian akun Google lama perlu dihubungkan ulang.",
+            "error",
+          );
+        } else if (syncResult.failedCount > 0) {
+          onShowToast(
+            `Status diperbarui, tetapi sinkronisasi gagal untuk ${syncResult.failedCount} akun Google.`,
+            "error",
+          );
+        } else if (syncResult.accountCount > 0) {
           onShowToast(
             `Status: ${newStatus}. Jadwal masuk ke Google Calendar!`,
             "success",
           );
         } else {
           onShowToast(
-            `Status pesanan diperbarui menjadi ${newStatus}`,
+            `Status pesanan diperbarui menjadi ${newStatus}. Belum ada akun Google yang terhubung.`,
             "success",
           );
         }
@@ -164,10 +170,12 @@ export default function IncomingOrdersPage({ onNavigate, onShowToast }) {
       {/* Order List */}
       <div className="flex flex-col gap-3 w-full">
         {/* Table Column Headers */}
-        <div className="hidden md:grid grid-cols-12 gap-6 px-6 py-2 text-xs uppercase tracking-wider text-[#855230] font-semibold">
-          <div className="col-span-4">Event &amp; Client</div>
-          <div className="col-span-3">Date &amp; Time</div>
+        <div className="hidden 2xl:grid grid-cols-12 gap-4 px-6 py-2 text-xs uppercase tracking-wider text-[#855230] font-semibold">
+          <div className="col-span-3">Event &amp; Client</div>
+          <div className="col-span-2">Date &amp; Time</div>
           <div className="col-span-3">Package &amp; Venue</div>
+          <div className="col-span-1">Backdrop</div>
+          <div className="col-span-1">Paper Type</div>
           <div className="col-span-2 text-right">Status</div>
         </div>
 
@@ -201,9 +209,9 @@ export default function IncomingOrdersPage({ onNavigate, onShowToast }) {
                 onClick={() => onNavigate("booking-detail", order)}
                 className="group bg-[#ffffff] hover:bg-[#f6f3ee]/60 rounded-xl p-5 md:p-6 shadow-xs border border-[#d3c3be]/40 transition-all duration-200 cursor-pointer"
               >
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-12 gap-x-5 gap-y-4 items-center">
                   {/* Event & Client */}
-                  <div className="md:col-span-4 flex items-center gap-4">
+                  <div className="md:col-span-1 2xl:col-span-3 flex items-center gap-4 min-w-0">
                     <div className="w-12 h-14 bg-[#ebe8e3] rounded-lg flex items-center justify-center flex-shrink-0 relative shadow-xs border border-[#d3c3be]/40">
                       <span className="text-xl font-serif font-bold text-[#855230]">
                         {order.customerName?.charAt(0) || "T"}
@@ -226,7 +234,10 @@ export default function IncomingOrdersPage({ onNavigate, onShowToast }) {
                   </div>
 
                   {/* Date & Time */}
-                  <div className="md:col-span-3 flex flex-col justify-center">
+                  <div className="md:col-span-1 2xl:col-span-2 flex flex-col justify-center min-w-0">
+                    <span className="2xl:hidden text-[10px] uppercase tracking-wider text-[#855230] font-semibold mb-1">
+                      Date &amp; Time
+                    </span>
                     <span className="text-sm text-[#090100] font-semibold flex items-center gap-1.5">
                       <span className="material-symbols-outlined text-[16px] text-[#855230]">
                         calendar_today
@@ -239,8 +250,11 @@ export default function IncomingOrdersPage({ onNavigate, onShowToast }) {
                   </div>
 
                   {/* Package & Venue */}
-                  <div className="md:col-span-3 flex flex-col justify-center min-w-0">
-                    <span className="text-sm text-[#090100] font-semibold flex items-center gap-1.5 truncate">
+                  <div className="md:col-span-1 2xl:col-span-3 flex flex-col justify-center min-w-0">
+                    <span className="2xl:hidden text-[10px] uppercase tracking-wider text-[#855230] font-semibold mb-1">
+                      Package &amp; Venue
+                    </span>
+                    <span className="text-sm text-[#090100] font-semibold flex items-center gap-1.5 truncate min-w-0">
                       {order.duration}
                     </span>
                     <span className="text-xs text-[#1c1c19] font-medium truncate mt-0.5">
@@ -248,8 +262,28 @@ export default function IncomingOrdersPage({ onNavigate, onShowToast }) {
                     </span>
                   </div>
 
+                  {/* Backdrop */}
+                  <div className="md:col-span-1 2xl:col-span-1 flex flex-col justify-center min-w-0">
+                    <span className="2xl:hidden text-[10px] uppercase tracking-wider text-[#855230] font-semibold mb-1">
+                      Backdrop
+                    </span>
+                    <span className="text-sm text-[#090100] font-medium truncate">
+                      {order.backdrop || "-"}
+                    </span>
+                  </div>
+
+                  {/* Paper Type */}
+                  <div className="md:col-span-1 2xl:col-span-1 flex flex-col justify-center min-w-0">
+                    <span className="2xl:hidden text-[10px] uppercase tracking-wider text-[#855230] font-semibold mb-1">
+                      Paper Type
+                    </span>
+                    <span className="text-sm text-[#090100] font-medium truncate">
+                      {order.paperType || "-"}
+                    </span>
+                  </div>
+
                   {/* Status Dropdown & Action */}
-                  <div className="md:col-span-2 flex items-center justify-between md:justify-end gap-3">
+                  <div className="md:col-span-2 2xl:col-span-2 flex items-center justify-between 2xl:justify-end gap-3 min-w-0">
                     {/* 🔥 DROPDOWN STATUS PENGGANTI BADGE */}
                     <div className="relative inline-block">
                       <select
@@ -258,7 +292,7 @@ export default function IncomingOrdersPage({ onNavigate, onShowToast }) {
                         onChange={(e) =>
                           handleStatusChange(order, e.target.value)
                         }
-                        className={`text-xs font-semibold rounded-lg pl-3 pr-8 py-1.5 border outline-none cursor-pointer appearance-none transition-colors shadow-xs ${
+                        className={`max-w-full text-xs font-semibold rounded-lg pl-3 pr-8 py-1.5 border outline-none cursor-pointer appearance-none transition-colors shadow-xs ${
                           order.status === "Pending"
                             ? "bg-[#fff8e6] text-[#b38a22] border-[#ffe4a0]"
                             : order.status === "Confirmed"
@@ -305,7 +339,7 @@ export default function IncomingOrdersPage({ onNavigate, onShowToast }) {
                         e.stopPropagation();
                         onNavigate("booking-detail", order);
                       }}
-                      className="px-3 py-1.5 bg-[#f6f3ee] hover:bg-[#ebe8e3] text-[#090100] text-xs font-semibold rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                      className="shrink-0 px-3 py-1.5 bg-[#f6f3ee] hover:bg-[#ebe8e3] text-[#090100] text-xs font-semibold rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
                     >
                       <span>View</span>
                       <span className="material-symbols-outlined text-[14px]">

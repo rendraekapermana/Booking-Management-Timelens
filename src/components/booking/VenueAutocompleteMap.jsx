@@ -11,7 +11,7 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-const HOME_COORDS = { lat: -6.28862, lng: 106.71789 }; // Koordinat Studio Timelens
+const STUDIO_COORDS = { lat: -6.2898296, lng: 106.668402 };
 
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
@@ -53,7 +53,7 @@ export default function VenueAutocompleteMap({ onSelectLocation }) {
     try {
       // 1. Tambahkan "Indonesia" secara diam-diam di belakang query dan minta hasil lebih banyak (limit=15)
       const res = await fetch(
-        `https://photon.komoot.io/api/?q=${encodeURIComponent(searchText + " Indonesia")}&limit=15&lat=-6.200000&lon=106.816666`,
+        `https://photon.komoot.io/api/?q=${encodeURIComponent(searchText + " Indonesia")}&limit=15&lat=${STUDIO_COORDS.lat}&lon=${STUDIO_COORDS.lng}`,
       );
       const data = await res.json();
 
@@ -104,7 +104,12 @@ export default function VenueAutocompleteMap({ onSelectLocation }) {
 
   const processNewPosition = async (lat, lon) => {
     setPosition([lat, lon]);
-    const distance = getDistance(HOME_COORDS.lat, HOME_COORDS.lng, lat, lon);
+    const distance = getDistance(
+      STUDIO_COORDS.lat,
+      STUDIO_COORDS.lng,
+      lat,
+      lon,
+    );
 
     try {
       const res = await fetch(
@@ -206,8 +211,8 @@ export default function VenueAutocompleteMap({ onSelectLocation }) {
       {/* Peta */}
       <div className="w-full h-64 rounded-xl overflow-hidden border border-[#d3c3be]/60 relative z-0 shadow-sm">
         <MapContainer
-          center={position || [-6.2, 106.816666]}
-          zoom={position ? 16 : 10}
+          center={position || [STUDIO_COORDS.lat, STUDIO_COORDS.lng]}
+          zoom={position ? 16 : 13}
           className="w-full h-full"
         >
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

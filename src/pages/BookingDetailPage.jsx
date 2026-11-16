@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { bookingService } from "../services/bookingService.js";
+import { expenseService } from "../services/expenseService.js";
 import { formatIDR } from "../lib/formatters.js";
 import BookingSpecsCard from "../components/booking/BookingSpecsCard.jsx";
 import PaymentLedger from "../components/booking/PaymentLedger.jsx";
@@ -43,14 +44,16 @@ const DetailHeader = ({ booking, onNavigate, onOpenEdit, onOpenPayment }) => (
       >
         Download Invoice
       </Button>
-      <Button
-        variant="primary"
-        size="sm"
-        icon="payments"
-        onClick={onOpenPayment}
-      >
-        Record Payment
-      </Button>
+      {!booking.isProfitSharing && (
+        <Button
+          variant="primary"
+          size="sm"
+          icon="payments"
+          onClick={onOpenPayment}
+        >
+          Record Payment
+        </Button>
+      )}
     </div>
   </div>
 );
@@ -104,6 +107,19 @@ const EventProfileCard = ({ booking, onStatusChange }) => (
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="flex flex-col gap-4">
+        <div>
+          <span className="text-[11px] text-[#504440] uppercase tracking-wider font-semibold">
+            Event Type
+          </span>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="material-symbols-outlined text-[18px] text-[#855230]">
+              celebration
+            </span>
+            <span className="text-sm text-[#1c1c19] font-semibold">
+              {booking.eventType || "-"}
+            </span>
+          </div>
+        </div>
         <div>
           <span className="text-[11px] text-[#504440] uppercase tracking-wider font-semibold">
             Event Date
@@ -212,7 +228,7 @@ const CustomerProfileCard = ({ booking }) => (
           {booking.customerName}
         </span>
         <span className="text-xs text-[#504440]">
-          {booking.customerTitle || "Client • Primary Contact"}
+          {booking.customerTitle || "Client"}
         </span>
       </div>
     </div>
@@ -253,6 +269,224 @@ const CustomerProfileCard = ({ booking }) => (
   </div>
 );
 
+const ProfitSharingCard = ({
+  booking,
+  expenses,
+  isLoading,
+  error,
+  onAddExpense,
+  onViewExpenses,
+}) => {
+  const grossRevenue = Number(booking.totalPrice) || 0;
+  const receivedAmount = Number(booking.downPayment) || 0;
+  const totalExpenses = expenses.reduce(
+    (total, expense) => total + (Number(expense.amount) || 0),
+    0,
+  );
+  const deductibleExpenses = expenses.reduce((total, expense) => {
+    const deductFromProfit =
+      expense.deduct_from_profit_sharing !== false &&
+      expense.deductFromProfitSharing !== false;
+    return total + (deductFromProfit ? Number(expense.amount) || 0 : 0);
+  }, 0);
+  const netProfit = grossRevenue - deductibleExpenses;
+  const timelensPercentage = Number(booking.timelensProfitPercentage);
+  const clientPercentage = Number(booking.clientProfitPercentage);
+  const hasValidSplit =
+    booking.timelensProfitPercentage !== null &&
+    booking.timelensProfitPercentage !== undefined &&
+    booking.clientProfitPercentage !== null &&
+    booking.clientProfitPercentage !== undefined &&
+    Number.isFinite(timelensPercentage) &&
+    Number.isFinite(clientPercentage) &&
+    timelensPercentage >= 0 &&
+    timelensPercentage <= 100 &&
+    clientPercentage >= 0 &&
+    clientPercentage <= 100 &&
+    Math.abs(timelensPercentage + clientPercentage - 100) < 0.01;
+
+  return (
+    <section className="bg-white rounded-xl p-6 shadow-xs border border-[#d3c3be]/30 flex flex-col gap-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#d3c3be]/30">
+        <div className="flex items-center gap-2.5">
+          <span className="material-symbols-outlined text-[20px] text-[#855230]">
+            account_balance
+          </span>
+          <h2 className="text-sm text-[#090100] uppercase tracking-wider font-bold">
+            Ringkasan Bagi Hasil
+          </h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            icon="add"
+            onClick={onAddExpense}
+          >
+            Catat Pengeluaran
+          </Button>
+          <Button
+            variant="subtle"
+            size="sm"
+            icon="receipt_long"
+            onClick={onViewExpenses}
+          >
+            Expenses
+          </Button>
+        </div>
+      </div>
+
+      {error ? (
+        <div
+          role="alert"
+          className="rounded-lg border border-[#fecaca] bg-[#fef2f2] p-4 text-sm text-[#ba1a1a]"
+        >
+          Pengeluaran event gagal dimuat. Ringkasan bagi hasil belum dapat
+          dihitung. Periksa koneksi dan pastikan migrasi database expense sudah
+          diterapkan.
+        </div>
+      ) : isLoading ? (
+        <div className="flex items-center gap-2 py-4 text-sm text-[#827470]">
+          <span className="material-symbols-outlined animate-spin">sync</span>
+          Memuat pengeluaran event...
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+            <div className="flex justify-between gap-4 py-3 border-b border-[#f0ede9]">
+              <span className="text-sm text-[#504440]">
+                Nilai total event
+              </span>
+              <span className="text-sm font-mono font-semibold text-[#090100]">
+                {formatIDR(grossRevenue)}
+              </span>
+            </div>
+            <div className="flex justify-between gap-4 py-3 border-b border-[#f0ede9]">
+              <span className="text-sm text-[#504440]">
+                Pembayaran diterima
+              </span>
+              <span className="text-sm font-mono font-semibold text-[#2d633b]">
+                {formatIDR(receivedAmount)}
+              </span>
+            </div>
+            <div className="flex justify-between gap-4 py-3 border-b border-[#f0ede9]">
+              <span className="text-sm text-[#504440]">
+                Total pengeluaran event
+              </span>
+              <span className="text-sm font-mono font-semibold text-[#090100]">
+                {formatIDR(totalExpenses)}
+              </span>
+            </div>
+            <div className="flex justify-between gap-4 py-3 border-b border-[#f0ede9]">
+              <span className="text-sm text-[#504440]">
+                Pengeluaran yang mengurangi laba
+              </span>
+              <span className="text-sm font-mono font-semibold text-[#ba1a1a]">
+                - {formatIDR(deductibleExpenses)}
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-lg bg-[#f6f3ee] p-4 flex justify-between items-center gap-4">
+            <div>
+              <span className="block text-xs text-[#855230] uppercase tracking-wider font-bold">
+                Laba / (rugi) bersih
+              </span>
+              <span className="text-[11px] text-[#827470]">
+                Nilai total event dikurangi pengeluaran yang dipilih.
+              </span>
+            </div>
+            <span className="text-xl font-serif font-bold text-[#090100] whitespace-nowrap">
+              {formatIDR(netProfit)}
+            </span>
+          </div>
+
+          {hasValidSplit ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="rounded-lg border border-[#d3c3be]/40 p-4">
+                <span className="block text-xs text-[#504440]">
+                  Bagian Timelens ({timelensPercentage}%)
+                </span>
+                <span className="mt-1 block text-lg font-mono font-bold text-[#090100]">
+                  {formatIDR((netProfit * timelensPercentage) / 100)}
+                </span>
+              </div>
+              <div className="rounded-lg border border-[#d3c3be]/40 p-4">
+                <span className="block text-xs text-[#504440]">
+                  Bagian Klien ({clientPercentage}%)
+                </span>
+                <span className="mt-1 block text-lg font-mono font-bold text-[#090100]">
+                  {formatIDR((netProfit * clientPercentage) / 100)}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <p className="rounded-lg border border-[#ffe4a0] bg-[#fff8e6] p-3 text-xs text-[#855230]">
+              Persentase bagi hasil belum valid. Atur bagian Timelens dan
+              Klien agar totalnya 100% melalui Edit Booking.
+            </p>
+          )}
+
+          <div className="border-t border-[#f0ede9] pt-4">
+            <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#855230]">
+              Rincian pengeluaran event
+            </h3>
+            {expenses.length > 0 ? (
+              <div className="divide-y divide-[#f0ede9]">
+                {expenses.map((expense) => {
+                  const deductFromProfit =
+                    expense.deduct_from_profit_sharing !== false &&
+                    expense.deductFromProfitSharing !== false;
+                  return (
+                    <div
+                      key={expense.id}
+                      className="flex justify-between items-center gap-4 py-2.5"
+                    >
+                      <div className="min-w-0">
+                        <span className="block truncate text-sm font-semibold text-[#090100]">
+                          {expense.description || expense.category}
+                        </span>
+                        <span className="text-[11px] text-[#827470]">
+                          {expense.dateFormatted || expense.date} ·{" "}
+                          {expense.category}
+                          {deductFromProfit
+                            ? " · Mengurangi laba"
+                            : " · Tidak mengurangi laba"}
+                        </span>
+                      </div>
+                      <span className="shrink-0 text-sm font-mono font-semibold text-[#090100]">
+                        {formatIDR(expense.amount)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-[#827470]">
+                Belum ada pengeluaran yang ditautkan ke event ini.
+              </p>
+            )}
+            {expenses.length === 0 && (
+              <p className="mt-1 text-[11px] text-[#827470]">
+                Jika pengeluaran lama belum muncul, buka Expenses, edit
+                pengeluaran tersebut, lalu pilih ulang event ini untuk
+                menautkannya.
+              </p>
+            )}
+          </div>
+
+          <p className="text-[11px] leading-relaxed text-[#827470]">
+            Perhitungan memakai nilai total booking; pembayaran diterima hanya
+            ditampilkan sebagai informasi. HPP/modal tidak ditambahkan terpisah
+            agar tidak terhitung ganda—catat biaya tersebut di Expenses jika
+            ingin menguranginya.
+          </p>
+        </>
+      )}
+    </section>
+  );
+};
+
 // --- KOMPONEN UTAMA ---
 export default function BookingDetailPage(props) {
   const passedBooking = props.booking || props.initialBooking;
@@ -265,6 +499,9 @@ export default function BookingDetailPage(props) {
   const [isEditing, setIsEditing] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [editData, setEditData] = useState({});
+  const [profitSharingExpenses, setProfitSharingExpenses] = useState([]);
+  const [isLoadingProfitExpenses, setIsLoadingProfitExpenses] = useState(false);
+  const [profitExpenseError, setProfitExpenseError] = useState(false);
 
   useEffect(() => {
     if (passedBooking) {
@@ -287,6 +524,10 @@ export default function BookingDetailPage(props) {
         status: passedBooking.status || "Pending",
         uploadedFileName: passedBooking.uploadedFileName || null,
         hppAmount: passedBooking.hppAmount || passedBooking.hpp_amount || 0,
+        isProfitSharing: passedBooking.isProfitSharing === true,
+        timelensProfitPercentage:
+          passedBooking.timelensProfitPercentage ?? "",
+        clientProfitPercentage: passedBooking.clientProfitPercentage ?? "",
       });
       setIsLoading(false);
       return;
@@ -316,6 +557,9 @@ export default function BookingDetailPage(props) {
           status: data.status || "Pending",
           uploadedFileName: data.uploadedFileName || null,
           hppAmount: data.hppAmount || data.hpp_amount || 0,
+          isProfitSharing: data.isProfitSharing === true,
+          timelensProfitPercentage: data.timelensProfitPercentage ?? "",
+          clientProfitPercentage: data.clientProfitPercentage ?? "",
         });
       } catch (error) {
         if (props.onShowToast)
@@ -327,14 +571,76 @@ export default function BookingDetailPage(props) {
     fetchBooking();
   }, [passedId, passedBooking]);
 
+  useEffect(() => {
+    if (!booking?.id || !booking.isProfitSharing) {
+      setProfitSharingExpenses([]);
+      setProfitExpenseError(false);
+      setIsLoadingProfitExpenses(false);
+      return;
+    }
+
+    let isCurrentRequest = true;
+    setIsLoadingProfitExpenses(true);
+    setProfitExpenseError(false);
+
+    expenseService
+      .getByBookingId(booking.id)
+      .then((expenses) => {
+        if (isCurrentRequest) setProfitSharingExpenses(expenses);
+      })
+      .catch((error) => {
+        console.error("Gagal memuat pengeluaran untuk bagi hasil:", error);
+        if (isCurrentRequest) {
+          setProfitSharingExpenses([]);
+          setProfitExpenseError(true);
+        }
+      })
+      .finally(() => {
+        if (isCurrentRequest) setIsLoadingProfitExpenses(false);
+      });
+
+    return () => {
+      isCurrentRequest = false;
+    };
+  }, [booking?.id, booking?.isProfitSharing]);
+
   const handleSaveEdit = async (e) => {
     e.preventDefault();
+    const timelensProfitPercentage = Number(
+      editData.timelensProfitPercentage,
+    );
+    const clientProfitPercentage = Number(editData.clientProfitPercentage);
+    if (
+      editData.isProfitSharing &&
+      (editData.timelensProfitPercentage === "" ||
+        editData.clientProfitPercentage === "" ||
+        timelensProfitPercentage < 0 ||
+        timelensProfitPercentage > 100 ||
+        clientProfitPercentage < 0 ||
+        clientProfitPercentage > 100 ||
+        Math.abs(timelensProfitPercentage + clientProfitPercentage - 100) >
+          0.01)
+    ) {
+      if (props.onShowToast)
+        props.onShowToast(
+          "Persentase Timelens dan client harus berjumlah 100%",
+          "error",
+        );
+      return;
+    }
+
     try {
       const payload = {
         ...booking,
         ...editData,
         hppAmount: Number(editData.hppAmount || 0),
         totalPrice: Number(editData.totalPrice || 0),
+        timelensProfitPercentage: editData.isProfitSharing
+          ? timelensProfitPercentage
+          : null,
+        clientProfitPercentage: editData.isProfitSharing
+          ? clientProfitPercentage
+          : null,
         id: booking.id,
       };
       const updatedData = await bookingService.update(payload);
@@ -357,18 +663,34 @@ export default function BookingDetailPage(props) {
       if (props.onUpdateBooking) props.onUpdateBooking(updatedData);
 
       if (newStatus === "Confirmed" || newStatus === "Fully Paid") {
-        const savedAccounts = JSON.parse(
-          localStorage.getItem("googleAccounts") || "[]",
-        );
-        if (savedAccounts.length > 0) {
-          savedAccounts.forEach(async (acc) => {
-            await syncBookingToGoogleCalendar(updatedData, acc.accessToken);
-          });
-          if (props.onShowToast)
+        const syncResult = await syncBookingToGoogleCalendar(updatedData);
+        if (props.onShowToast) {
+          if (syncResult.error) {
+            props.onShowToast(
+              `Status diperbarui, tetapi sinkronisasi gagal: ${syncResult.error}`,
+              "error",
+            );
+          } else if (syncResult.migrationFailures > 0) {
+            props.onShowToast(
+              "Status diperbarui, tetapi sebagian akun Google lama perlu dihubungkan ulang.",
+              "error",
+            );
+          } else if (syncResult.failedCount > 0) {
+            props.onShowToast(
+              `Status diperbarui, tetapi sinkronisasi gagal untuk ${syncResult.failedCount} akun Google.`,
+              "error",
+            );
+          } else if (syncResult.accountCount > 0) {
             props.onShowToast(
               `Status: ${newStatus}. Jadwal masuk ke Kalender!`,
               "success",
             );
+          } else {
+            props.onShowToast(
+              `Status diperbarui menjadi ${newStatus}. Belum ada akun Google yang terhubung.`,
+              "success",
+            );
+          }
         } else {
           if (props.onShowToast)
             props.onShowToast(`Status diperbarui menjadi ${newStatus}`);
@@ -439,19 +761,34 @@ export default function BookingDetailPage(props) {
 
         <div className="lg:col-span-5 flex flex-col gap-8">
           <CustomerProfileCard booking={booking} />
-          <PaymentLedger
-            booking={booking}
-            onOpenRecordPayment={() => setShowPaymentModal(true)}
-          />
+          {!booking.isProfitSharing && (
+            <PaymentLedger
+              booking={booking}
+              onOpenRecordPayment={() => setShowPaymentModal(true)}
+            />
+          )}
         </div>
       </div>
 
-      <RecordPaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        booking={booking}
-        onRecordPayment={handleRecordPayment}
-      />
+      {booking.isProfitSharing && (
+        <ProfitSharingCard
+          booking={booking}
+          expenses={profitSharingExpenses}
+          isLoading={isLoadingProfitExpenses}
+          error={profitExpenseError}
+          onAddExpense={() => props.onNavigate("add-expense", booking)}
+          onViewExpenses={() => props.onNavigate("expenses")}
+        />
+      )}
+
+      {!booking.isProfitSharing && (
+        <RecordPaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          booking={booking}
+          onRecordPayment={handleRecordPayment}
+        />
+      )}
 
       {/* 🔥 MODAL EDIT YANG SUDAH DIRAPIKAN BERDASARKAN SEGMEN */}
       {isEditing && (
@@ -636,6 +973,54 @@ export default function BookingDetailPage(props) {
                 </div>
 
                 {/* Box Khusus Uang & Modal (HPP & Omzet saling berdampingan) */}
+                {editData.isProfitSharing && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 bg-[#fcf9f4] p-3 rounded-lg border border-[#ebe4da]">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-[#855230]">
+                        Bagian Timelens (%)
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        value={editData.timelensProfitPercentage}
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            timelensProfitPercentage: e.target.value,
+                          })
+                        }
+                        className="w-full p-2.5 text-xs bg-[#ffffff] rounded-lg border border-[#d3c3be]/40 text-[#090100]"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-[#855230]">
+                        Bagian Client (%)
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        value={editData.clientProfitPercentage}
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            clientProfitPercentage: e.target.value,
+                          })
+                        }
+                        className="w-full p-2.5 text-xs bg-[#ffffff] rounded-lg border border-[#d3c3be]/40 text-[#090100]"
+                      />
+                    </div>
+                    <span className="col-span-full text-[10px] text-[#827470]">
+                      Total pembagian harus 100%.
+                    </span>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 bg-[#fcf9f4] p-3 rounded-lg border border-[#ebe4da]">
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-[#2d633b]">

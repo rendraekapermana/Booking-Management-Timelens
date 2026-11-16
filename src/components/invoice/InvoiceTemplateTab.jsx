@@ -76,6 +76,29 @@ export default function InvoiceTemplateTab({ settings, onChange }) {
           />
         </div>
 
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+          <Input
+            label="Bank Rekening 2"
+            value={settings?.bankName2 || ""}
+            onChange={(e) => updateSetting("bankName2", e.target.value)}
+          />
+          <Input
+            label="Nomor Rekening 2"
+            value={settings?.accountNum2 || ""}
+            onChange={(e) => updateSetting("accountNum2", e.target.value)}
+          />
+          <Input
+            label="Bank Rekening 3"
+            value={settings?.bankName3 || ""}
+            onChange={(e) => updateSetting("bankName3", e.target.value)}
+          />
+          <Input
+            label="Nomor Rekening 3"
+            value={settings?.accountNum3 || ""}
+            onChange={(e) => updateSetting("accountNum3", e.target.value)}
+          />
+        </div>
+
         <Textarea
           label="Instruksi & Catatan Transfer"
           rows={2}

@@ -23,17 +23,23 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import { initialIncomingOrders, initialExpenses } from "./lib/mock/mockData.js";
 
+const isPublicBookingHash = (hash = window.location.hash) =>
+  hash === "#book/main-atelier" || hash === "#public-booking";
+
 export default function App() {
   // --- STATE OTENTIKASI & USER ---
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState(null); // Menyimpan data user yang login
 
-  const [currentView, setCurrentView] = useState("login");
+  const [currentView, setCurrentView] = useState(() =>
+    isPublicBookingHash() ? "public-booking" : "login",
+  );
   const [bookings, setBookings] = useState([]);
   const [incomingOrders, setIncomingOrders] = useState([]);
   const [expenses, setExpenses] = useState(initialExpenses);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [expenseToEdit, setExpenseToEdit] = useState(null);
+  const [expenseBooking, setExpenseBooking] = useState(null);
   const [isNewBookingModalOpen, setIsNewBookingModalOpen] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -94,7 +100,7 @@ export default function App() {
       } else {
         setIsAuthenticated(false);
         setCurrentUser(null);
-        if (currentView !== "public-booking") {
+        if (!isPublicBookingHash()) {
           setCurrentView("login");
         }
       }
@@ -115,7 +121,7 @@ export default function App() {
 
     const handleHashChange = () => {
       const hash = window.location.hash.replace("#", "");
-      if (hash === "book/main-atelier" || hash === "public-booking") {
+      if (isPublicBookingHash()) {
         setCurrentView("public-booking");
       } else if (hash === "login") {
         setCurrentView("login");
@@ -152,6 +158,15 @@ export default function App() {
 
   const navigate = (viewId, param = null) => {
     setCurrentView(viewId);
+    if (viewId === "add-expense") {
+      setExpenseBooking(
+        param && typeof param === "object" ? param : null,
+      );
+      if (param && typeof param === "object") setExpenseToEdit(null);
+    } else {
+      setExpenseBooking(null);
+      if (viewId === "expenses") setExpenseToEdit(null);
+    }
     if (param) {
       if (typeof param === "object") {
         setSelectedBooking(param);
@@ -188,13 +203,22 @@ export default function App() {
       const currentStatus = rawStatus.toLowerCase();
 
       if (currentStatus === "confirmed" || currentStatus === "fully paid") {
-        const savedAccounts = JSON.parse(
-          localStorage.getItem("googleAccounts") || "[]",
-        );
-        if (savedAccounts.length > 0) {
-          savedAccounts.forEach(async (acc) => {
-            await syncBookingToGoogleCalendar(savedBookings, acc.accessToken);
-          });
+        const syncResult = await syncBookingToGoogleCalendar(savedBookings);
+        if (syncResult.error) {
+          showToast(
+            `Booking tersimpan, tetapi sinkronisasi Google Calendar gagal: ${syncResult.error}`,
+            "error",
+          );
+        } else if (syncResult.migrationFailures > 0) {
+          showToast(
+            "Booking tersimpan, tetapi sebagian akun Google lama perlu dihubungkan ulang.",
+            "error",
+          );
+        } else if (syncResult.failedCount > 0) {
+          showToast(
+            `Booking tersimpan, tetapi sinkronisasi gagal untuk ${syncResult.failedCount} akun Google.`,
+            "error",
+          );
         }
       }
     } catch (error) {
@@ -208,39 +232,48 @@ export default function App() {
     setSelectedBooking(updated);
   };
 
-  const handleUpdateOrderStatus = (orderId, newStatus) => {
-    const updatedOrders = incomingOrders.map((o) => {
-      if (o.id === orderId) {
-        const updated = { ...o, status: newStatus };
-        if (newStatus === "Confirmed" || newStatus === "Fully Paid") {
-          const savedAccounts = JSON.parse(
-            localStorage.getItem("googleAccounts") || "[]",
-          );
-          if (savedAccounts.length > 0) {
-            savedAccounts.forEach(async (acc) => {
-              await syncBookingToGoogleCalendar(updated, acc.accessToken);
-            });
-            showToast(
-              `Status: ${newStatus}. Jadwal masuk ke Google Calendar!`,
-              "success",
-            );
-          } else {
-            showToast(
-              `Status pesanan diperbarui menjadi ${newStatus}.`,
-              "success",
-            );
-          }
-        } else {
-          showToast(
-            `Status pesanan diperbarui menjadi ${newStatus}.`,
-            "success",
-          );
-        }
-        return updated;
-      }
-      return o;
-    });
+  const handleUpdateOrderStatus = async (orderId, newStatus) => {
+    const order = incomingOrders.find((item) => item.id === orderId);
+    if (!order) return;
+
+    const updated = { ...order, status: newStatus };
+    const updatedOrders = incomingOrders.map((item) =>
+      item.id === orderId ? updated : item,
+    );
     setIncomingOrders(updatedOrders);
+
+    let calendarSyncMessage = `Status pesanan diperbarui menjadi ${newStatus}.`;
+    if (newStatus === "Confirmed" || newStatus === "Fully Paid") {
+      const syncResult = await syncBookingToGoogleCalendar(updated);
+      if (syncResult.error) {
+        showToast(
+          `Status diperbarui, tetapi sinkronisasi Google Calendar gagal: ${syncResult.error}`,
+          "error",
+        );
+        return;
+      }
+      if (syncResult.migrationFailures > 0) {
+        showToast(
+          "Status diperbarui, tetapi sebagian akun Google lama perlu dihubungkan ulang.",
+          "error",
+        );
+        return;
+      }
+      if (syncResult.failedCount > 0) {
+        showToast(
+          `Status diperbarui, tetapi sinkronisasi gagal untuk ${syncResult.failedCount} akun Google.`,
+          "error",
+        );
+        return;
+      }
+      if (syncResult.accountCount > 0) {
+        calendarSyncMessage = `Status: ${newStatus}. Jadwal masuk ke Google Calendar!`;
+      } else {
+        calendarSyncMessage = `Status pesanan diperbarui menjadi ${newStatus}. Belum ada akun Google yang terhubung.`;
+      }
+    }
+
+    showToast(calendarSyncMessage, "success");
   };
 
   const handleSelectBookingFromOrder = (order) => {
@@ -249,7 +282,7 @@ export default function App() {
       eventName: order.eventTitle,
       displayTitle: order.eventTitle,
       customerName: order.clientName,
-      customerTitle: "Client • Primary Contact",
+      customerTitle: "Client",
       customerPhone: order.clientPhone || "+62 812-3344-5566",
       customerEmail: order.clientEmail,
       date: order.eventDate,
@@ -426,6 +459,7 @@ export default function App() {
             <AddExpensePage
               onNavigate={navigate}
               expenseToEdit={expenseToEdit}
+              bookingForExpense={expenseBooking}
               onShowToast={showToast}
             />
           )}

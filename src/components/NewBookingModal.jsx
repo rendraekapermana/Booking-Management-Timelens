@@ -47,9 +47,10 @@ export default function NewBookingModal({ isOpen, onClose, onAddBooking }) {
     const newBooking = {
       id: `BK-2024-${Math.floor(100 + Math.random() * 900)}`,
       eventName: formData.eventName,
+      eventType: formData.eventType,
       displayTitle: formData.eventName,
       customerName: formData.clientName,
-      customerTitle: `${formData.eventType} Host • Primary Contact`,
+      customerTitle: `${formData.eventType} Host`,
       customerPhone: formData.clientPhone || '+62 812-0000-0000',
       customerEmail: formData.clientEmail || 'client@example.com',
       date: formData.date,
@@ -118,7 +119,7 @@ export default function NewBookingModal({ isOpen, onClose, onAddBooking }) {
                 <input
                   required
                   type="text"
-                  placeholder="e.g. Natasya Mareta"
+                  placeholder="e.g. Sarah Natasha"
                   value={formData.clientName}
                   onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
                   className="w-full px-3 py-2 text-sm bg-[#f6f3ee] border border-[#d3c3be]/40 rounded-lg text-[#090100] focus:outline-none focus:border-[#2c1810]"

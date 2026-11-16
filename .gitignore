@@ -19,3 +19,5 @@ bun.lock
 bun.lockb
 package-lock.json
 yarn.lock
+.vercel
+.env*
